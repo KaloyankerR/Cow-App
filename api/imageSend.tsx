@@ -1,27 +1,28 @@
 import axios from "axios";
 
-export const uploadImage = async (
-  uri: string,
-  fileName: string
-): Promise<void> => {
-  const apiUrl = "https://yourapi.com/upload";
+const BASE_URL = " http://145.93.61.13:8000";
 
-  // Convert the image URI to a blob or file
+export const uploadImage = async (imageUri: any): Promise<string> => {
   const formData = new FormData();
   formData.append("file", {
-    uri,
-    name: fileName,
-    type: "image/jpg", // or the MIME type of the selected image
-  } as any); // `as any` is used here because TypeScript's FormData types don't recognize the `uri` key
+    cont: imageUri,
+  } as any); // Compatibility workaround for TypeScript and FormData
 
   try {
-    const response = await axios.post(apiUrl, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+    console.log(imageUri);
+    const response = await axios.post(`${BASE_URL}/upload/`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
     });
-    console.log("Image uploaded:", response.data);
-  } catch (error) {
-    console.error("Upload failed:", error);
+
+    // Check if the expected data is present
+    if (response.data && response.data.message) {
+      return response.data.message;
+    } else {
+      throw new Error("Unexpected server response structure.");
+    }
+  } catch (error: any) {
+    console.log(imageUri);
+    console.error("Error uploading image:", error.message || error);
+    throw new Error("Failed to upload image. Please try again later.");
   }
 };

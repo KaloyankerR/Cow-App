@@ -1,10 +1,25 @@
+from typing import Dict
 from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from rich import _console
 from roboflow import Roboflow
 import cv2
 import numpy as np
 import os
 
+import urllib
+
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 
 rf = Roboflow(api_key="qX0aQQBnqLywhVFmlU4C")
 project = rf.workspace().project("cows-gyup1")
@@ -14,7 +29,8 @@ os.makedirs("cropped", exist_ok=True)
 
 @app.post("/upload/")
 async def upload_image(file: UploadFile = File(...)):
-    contents = await file.read()
+    contents = urllib.request.urlopen(file)
+    _console.log("Error uploading image:", contents)
     nparr = np.frombuffer(contents, np.uint8)
     image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 

@@ -8,7 +8,7 @@ import { useState } from "react";
 import { uploadImage } from "@/api/imageSend";
 
 export default function HomeScreen() {
-  const [image, setImage] = useState<string | null>(null);
+  const [image, setImage] = useState<any | null>(null);
 
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
@@ -20,8 +20,8 @@ export default function HomeScreen() {
     });
 
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
-      await uploadImage(result.assets[0].uri, "TestPhoto");
+      setImage(result.assets[0]);
+      await uploadImage(result.assets[0]);
     }
   };
 
