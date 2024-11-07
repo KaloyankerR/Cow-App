@@ -8,20 +8,35 @@ import { useState } from "react";
 import { uploadImage } from "@/api/imageSend";
 
 export default function HomeScreen() {
-  const [image, setImage] = useState<any | null>(null);
+  const [image, setImage] = useState<string | null>(null);
 
+  const convertToFile = async (
+    uri: string,
+    filename: string
+  ): Promise<File> => {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+
+    // Create and return a File object
+    return new File([blob], filename, {
+      type: blob.type,
+    });
+  };
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [6, 3],
-      quality: 1,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, // Choose only images
     });
 
     if (!result.canceled) {
-      setImage(result.assets[0]);
-      await uploadImage(result.assets[0]);
+      setImage(result.assets[0].uri);
+      const file = await convertToFile(
+        result.assets[0].uri,
+        "selected-image.jpg"
+      );
+      console.log("Send file");
+      console.log(file);
+      await uploadImage(file);
     }
   };
 

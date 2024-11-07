@@ -13,12 +13,11 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Replace "*" with specific domains for production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 
 rf = Roboflow(api_key="qX0aQQBnqLywhVFmlU4C")
@@ -29,8 +28,8 @@ os.makedirs("cropped", exist_ok=True)
 
 @app.post("/upload/")
 async def upload_image(file: UploadFile = File(...)):
-    contents = urllib.request.urlopen(file)
-    _console.log("Error uploading image:", contents)
+    print("Here")
+    contents = await file.read()
     nparr = np.frombuffer(contents, np.uint8)
     image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
