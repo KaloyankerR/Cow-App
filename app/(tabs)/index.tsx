@@ -1,21 +1,42 @@
-import { Image, StyleSheet, Platform, View, Button } from "react-native";
+import {
+  Image,
+  StyleSheet,
+  Platform,
+  View,
+  Button,
+  PermissionsAndroid,
+  Text,
+  TouchableOpacity,
+} from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { HelloWave } from "@/components/HelloWave";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useState } from "react";
-import { uploadImage } from "@/api/imageSend";
+import { uploadImage, uploadImage2, uploadImageString } from "@/api/imageSend";
+import ImagePickerReact from "react-native-image-picker";
+import styles from "../styles/HomeScreen.styles";
+import { ScrollView } from "react-native-gesture-handler";
 
 export default function HomeScreen() {
   const [image, setImage] = useState<string | null>(null);
+  const [text, setText] = useState<string | null>(
+    "🐮 Moo-tastic! Image Uploaded! Detecting breed and tag information..."
+  );
 
   const convertToFile = async (
     uri: string,
     filename: string
   ): Promise<File> => {
+    console.log("----------");
+    console.log(uri);
+    console.log("No");
     const response = await fetch(uri);
+    console.log("Yes");
+    console.log(response);
     const blob = await response.blob();
+    console.log(blob);
 
     // Create and return a File object
     return new File([blob], filename, {
@@ -23,65 +44,57 @@ export default function HomeScreen() {
     });
   };
   const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images, // Choose only images
+      base64: true,
     });
 
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
-      const file = await convertToFile(
-        result.assets[0].uri,
-        "selected-image.jpg"
+      setText(
+        "🐮 Moo-tastic! Image Uploaded! Detecting breed and tag information..."
       );
-      console.log("Send file");
-      console.log(file);
-      await uploadImage(file);
+      setImage("data:image/jpeg;base64," + result.assets[0].base64);
+      //console.log("file");
+      //const file = await convertToFile(
+      //  "data:image/jpeg;base64," + result.assets[0].base64,
+      //  "selected-image.jpg"
+      //);
+      //await uploadImage(file);
+
+      const response = await uploadImageString(
+        "data:image/jpeg;base64," + result.assets[0].base64
+      );
+      setImage("data:image/jpeg;base64," + response.data.labeled_image);
+      setText(response.data.message);
+      console.log(response.data.message);
     }
   };
 
+  const handleChoosePhoto = async () => {
+    const options = {
+      noData: true,
+    };
+    let res = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+    });
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
-      headerImage={
-        <Image
-          source={require("@/assets/images/partial-react-logo.png")}
-          style={styles.reactLogo}
-        />
-      }
-    >
-      <View style={styles.container}>
-        <Button title="Select Image" onPress={pickImage} />
-        {image && <Image source={{ uri: image }} style={styles.image} />}
-      </View>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      <Text style={styles.header}>Cow Identifier for</Text>
+      <Text style={styles.header}>DAP Thewi</Text>
+      <Text style={styles.subheader}>
+        Upload an image to identify your cow by tag and color breed
+      </Text>
+
+      <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
+        <Text style={styles.buttonText}>🐄 Upload Cow Image</Text>
+      </TouchableOpacity>
+
+      {image && <Image source={{ uri: image }} style={styles.image} />}
+      {image && <Text style={styles.imageText}>{text}</Text>}
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: "absolute",
-  },
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  image: {
-    width: 400,
-    height: 200,
-  },
-});

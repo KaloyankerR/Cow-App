@@ -1,6 +1,6 @@
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 
-const BASE_URL = " http://145.93.61.13:8000";
+const BASE_URL = " http://192.168.178.206:8000";
 
 export const uploadImage = async (file: File): Promise<string> => {
   const formData2 = new FormData();
@@ -26,17 +26,35 @@ export const uploadImage = async (file: File): Promise<string> => {
   }
 };
 
-export const uploadImage2 = async (uri: string): Promise<string> => {
-  const formData2 = new FormData();
-  formData2.append("file", {
-    uri: uri,
-    name: "test.jpg",
-    type: "image/jpeg",
-  }); // Compatibility workaround for TypeScript and FormData
+export const uploadImageString = async (
+  value: string
+): Promise<AxiosResponse> => {
   try {
     console.log("Here");
-    console.log(formData2);
-    const response = await axios.post(`${BASE_URL}/upload/`, formData2, {
+    const response = await axios.post(`${BASE_URL}/uploadString/`, {
+      headers: { "Content-Type": "text/plain" },
+      data: {
+        value: value,
+      },
+    });
+    console.log("Here2");
+    // Check if the expected data is present
+    if (response.data && response.data.message) {
+      return response;
+    } else {
+      throw new Error("Unexpected server response structure.");
+    }
+  } catch (error: any) {
+    //console.log(imageUri);
+    console.error("Error uploading image:", error || error);
+    throw new Error("Failed to upload image. Please try again later.");
+  }
+};
+
+export const uploadImage2 = async (file: FormData): Promise<string> => {
+  try {
+    console.log("Here");
+    const response = await axios.post(`${BASE_URL}/upload/`, file, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     console.log("Here2");
@@ -47,7 +65,6 @@ export const uploadImage2 = async (uri: string): Promise<string> => {
       throw new Error("Unexpected server response structure.");
     }
   } catch (error: any) {
-    //console.log(imageUri);
     console.error("Error uploading image:", error || error);
     throw new Error("Failed to upload image. Please try again later.");
   }
