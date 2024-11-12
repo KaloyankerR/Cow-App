@@ -72,29 +72,25 @@ export default function HomeScreen() {
     }
   };
 
-  const handleChoosePhoto = async () => {
-    const options = {
-      noData: true,
-    };
-    let res = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-    });
-  };
-
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Cow Identifier for</Text>
-      <Text style={styles.header}>DAP Thewi</Text>
-      <Text style={styles.subheader}>
-        Upload an image to identify your cow by tag and color breed
-      </Text>
 
-      <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-        <Text style={styles.buttonText}>🐄 Upload Cow Image</Text>
-      </TouchableOpacity>
+      <View style={styles.headerContainer}>
+        <Text style={styles.header}>Cow Identifier for</Text>
+        <Text style={styles.header}>DAP Thewi</Text>
+        <Text style={styles.subheader}>
+          Upload an image to identify your cow by tag and color breed
+        </Text>
+      </View>
 
-      {image && <Image source={{ uri: image }} style={styles.image} />}
-      {image && <Text style={styles.imageText}>{text}</Text>}
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
+          <Text style={styles.buttonText}>🐄 Upload Cow Image</Text>
+        </TouchableOpacity>
+
+        {image && <Image source={{ uri: image }} style={styles.image} />}
+        {image && <Text style={styles.imageText}>{text}</Text>}
+      </ScrollView>
     </View>
   );
 }
