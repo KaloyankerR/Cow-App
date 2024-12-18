@@ -27,6 +27,18 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="checkCow"
+        options={{
+          title: "Check Cow",
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon
+              name={focused ? "cow" : "cow-outline"}
+              color={color}
+            />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
