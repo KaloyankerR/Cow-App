@@ -45,11 +45,12 @@ const styles = StyleSheet.create({
     elevation: 5,
     marginBottom: 20,
   },
-
+  // 18/12/2024 - Added by me Shelson, just to center the button's
   buttonContainer: {
     flex:1,
     flexDirection: "row",
     alignItems: "center",
+    marginTop:"5%"
   },
   
   buttonText: {

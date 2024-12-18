@@ -48,6 +48,10 @@ export default function HomeScreen() {
     }
   };
 
+  const pickVid = async () => {
+
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
@@ -61,13 +65,14 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Button's */}
         <View style={styles.buttonContainer}>
-          
+
           <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
             <Text style={styles.buttonText}>📷 Upload Image</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-            <Text style={styles.buttonText}>🎥 Upload Video</Text>
+          {/* Video Button WIP */}
+          <TouchableOpacity style={styles.uploadButton} onPress={pickVid}>
+            <Text style={styles.buttonText} disabled={true}>🎥 Upload Video</Text>
           </TouchableOpacity>
         </View>
         

@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ScrollView,
 } from "react-native";
+import styles from "../styles/HomeScreen.styles";
 
 export default function CheckCow() {
   const [cowTag, setCowTag] = useState("");
@@ -39,33 +40,33 @@ export default function CheckCow() {
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.headerContainer}>
-          <Text style={styles.header}>Cow Information</Text>
+          <Text style={styles.header}>Manual Cow Search</Text>
           <Text style={styles.subheader}>
             Enter a cow tag to retrieve details
           </Text>
         </View>
 
         <TextInput
-          style={styles.input}
+          style={loc_styles.input}
           placeholder="Enter Cow Tag"
           value={cowTag}
           onChangeText={setCowTag}
           placeholderTextColor="#888"
         />
-        <TouchableOpacity style={styles.button} onPress={handleSearch}>
-          <Text style={styles.buttonText}>🔍 Search</Text>
+        <TouchableOpacity style={loc_styles.button} onPress={handleSearch}>
+          <Text style={loc_styles.buttonText}>🔍 Search</Text>
         </TouchableOpacity>
 
         {cowDetails && (
-          <View style={styles.detailsContainer}>
+          <View style={loc_styles.detailsContainer}>
             {cowDetails[0]?.error ? (
-              <Text style={styles.error}>{cowDetails[0].error}</Text>
+              <Text style={loc_styles.error}>{cowDetails[0].error}</Text>
             ) : (
               cowDetails.map((cow, index) => (
-                <View key={index} style={styles.cowDetailCard}>
-                  <Text style={styles.detail}>🐮 Breed: {cow.breed}</Text>
-                  <Text style={styles.detail}>🌍 Country: {cow.country}</Text>
-                  <Text style={styles.detail}>📅 Age: {cow.age}</Text>
+                <View key={index} style={loc_styles.cowDetailCard}>
+                  <Text style={loc_styles.detail}>🐮 Breed: {cow.breed}</Text>
+                  <Text style={loc_styles.detail}>🌍 Country: {cow.country}</Text>
+                  <Text style={loc_styles.detail}>📅 Age: {cow.age}</Text>
                 </View>
               ))
             )}
@@ -76,10 +77,10 @@ export default function CheckCow() {
   );
 }
 
-const styles = StyleSheet.create({
+const loc_styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#FAF3E3",
     padding: 20,
   },
   scrollContainer: {
@@ -103,8 +104,9 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   input: {
+    marginTop:20,
     height: 50,
-    width: "100%",
+    width: "85%",
     borderColor: "#ddd",
     borderWidth: 1,
     borderRadius: 10,
@@ -116,13 +118,15 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: "#28a745",
     borderRadius: 10,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
+    // paddingVertical: 15,
+    // paddingHorizontal: 20,
     alignItems: "center",
-    width: "100%",
+    justifyContent:"center",
+    width: "80%",
+    height:40
   },
   buttonText: {
-    fontSize: 16,
+    fontSize: 18,
     color: "#fff",
     fontWeight: "bold",
   },
@@ -132,7 +136,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 10,
     padding: 20,
-    width: "100%",
+    width: "90%",
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 10,
@@ -142,7 +146,7 @@ const styles = StyleSheet.create({
   cowDetailCard: {
     marginBottom: 20,
     padding: 10,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#b8b8b8",
     borderRadius: 8,
     width: "100%",
   },
