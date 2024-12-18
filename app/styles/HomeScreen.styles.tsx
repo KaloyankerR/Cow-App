@@ -28,13 +28,14 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     alignItems: "center",
-    padding: 20,
-    paddingBottom: 50, // Add padding to avoid clipping at the bottom
+    //padding: 20,
+    //paddingBottom: 50, // Add padding to avoid clipping at the bottom
   },
+
   uploadButton: {
     backgroundColor: "#8B5E3C",
     paddingVertical: 15,
-    paddingHorizontal: 40,
+    paddingHorizontal: 30,
     borderRadius: 30,
     borderColor: "#D2B48C",
     borderWidth: 2,
@@ -44,6 +45,13 @@ const styles = StyleSheet.create({
     elevation: 5,
     marginBottom: 20,
   },
+
+  buttonContainer: {
+    flex:1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  
   buttonText: {
     fontSize: 18,
     color: "#FFF7E4",

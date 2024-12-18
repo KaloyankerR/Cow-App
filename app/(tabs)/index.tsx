@@ -59,9 +59,19 @@ export default function HomeScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-          <Text style={styles.buttonText}>🐄 Upload Cow Image</Text>
-        </TouchableOpacity>
+        {/* Button's */}
+        <View style={styles.buttonContainer}>
+          
+          <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
+            <Text style={styles.buttonText}>📷 Upload Image</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
+            <Text style={styles.buttonText}>🎥 Upload Video</Text>
+          </TouchableOpacity>
+        </View>
+        
+
 
         {image && <Image source={{ uri: image }} style={styles.image} />}
         {image && <Text style={styles.imageText}>{text}</Text>}
