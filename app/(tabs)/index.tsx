@@ -1,13 +1,21 @@
 import {
   Image,
   StyleSheet,
+  Platform,
   View,
+  Button,
+  PermissionsAndroid,
   Text,
   TouchableOpacity,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { HelloWave } from "@/components/HelloWave";
+import ParallaxScrollView from "@/components/ParallaxScrollView";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
 import { useState } from "react";
-import { uploadImageString } from "@/api/imageSend";
+import { uploadImage, uploadImage2, uploadImageString } from "@/api/imageSend";
+import ImagePickerReact from "react-native-image-picker";
 import styles from "../styles/HomeScreen.styles";
 import { ScrollView } from "react-native-gesture-handler";
 
@@ -16,35 +24,68 @@ export default function HomeScreen() {
   const [text, setText] = useState<string | null>(
     "🐮 Moo-tastic! Image Uploaded! Detecting breed and tag information..."
   );
-  const [cowDetails, setCowDetails] = useState([]);
+
+  const convertToFile = async (
+    uri: string,
+    filename: string
+  ): Promise<File> => {
+    console.log("----------");
+    console.log(uri);
+    console.log("No");
+    const response = await fetch(uri);
+    console.log("Yes");
+    console.log(response);
+    const blob = await response.blob();
+    console.log(blob);
+
+    // Create and return a File object
+    return new File([blob], filename, {
+      type: blob.type,
+    });
+  };
 
   const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      base64: true,
-    });
+    try {
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      // No permissions request is necessary for launching the image library
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images, // Choose only images
+        base64: true,
+      });
 
-    if (!result.canceled) {
-      setText(
-        "🐮 Moo-tastic! Image Uploaded! Detecting breed and tag information..."
-      );
-      setImage("data:image/jpeg;base64," + result.assets[0].base64);
+      if (!result.canceled) {
+        setText(
+          "🐮 Moo-tastic! Image Uploaded! Detecting breed and tag information..."
+        );
+        setImage("data:image/jpeg;base64," + result.assets[0].base64);
+        //console.log("file");
+        //const file = await convertToFile(
+        //  "data:image/jpeg;base64," + result.assets[0].base64,
+        //  "selected-image.jpg"
+        //);
+        //await uploadImage(file);
 
-      const response = {
+        const response = await uploadImageString(
+          "data:image/jpeg;base64," + result.assets[0].base64
+        );
+        setImage("data:image/jpeg;base64," + response.data.labeled_image);
+        setText(response.data.message);
+        console.log(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error occurred:", error);
+
+      const mockedResponse = {
         data: {
-          labeled_image: "data:image/jpeg;base64," + result.assets[0].base64,
-          message: "Detection successful!",
-          detected_cows: [
-            { tag: "12345", breed: "Holstein", age: "5 years", country: "Netherlands" },
-            { tag: "67890", breed: "Jersey", age: "3 years", country: "USA" },
-          ],
+          labeled_image: "data:image/jpeg;base64,<mocked_image_base64>",
+          message: "Error detected: Unable to return response from the backend.",
         },
       };
 
-      setImage(response.data.labeled_image);
-      setCowDetails(response.data.detected_cows); 
-      setText(response.data.message);
+      setImage(mockedResponse.data.labeled_image);
+      setText(mockedResponse.data.message);
+      console.log("Using mocked response:", mockedResponse.data.message);
     }
   };
 
@@ -58,25 +99,40 @@ export default function HomeScreen() {
         </Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      {/* Old ScrollView, if the new one has bugs */}
+      {/* <ScrollView contentContainerStyle={styles.scrollContainer}>
         <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
           <Text style={styles.buttonText}>🐄 Upload Cow Image</Text>
         </TouchableOpacity>
 
         {image && <Image source={{ uri: image }} style={styles.image} />}
         {image && <Text style={styles.imageText}>{text}</Text>}
+      </ScrollView> */}
+      
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
+          <Text style={styles.buttonText}>🐄 Upload Cow Image</Text>
+        </TouchableOpacity>
 
-        {cowDetails.length > 0 && (
-          <View style={styles.detailsContainer}>
-            <Text style={styles.detailsTitle}>Detected Cows:</Text>
-            {cowDetails.map((cow, index) => (
-              <View key={index} style={styles.cowDetailBox}>
-                <Text style={styles.detail}>🐮 Tag: {cow.tag}</Text>
-                <Text style={styles.detail}>📅 Age: {cow.age}</Text>
-                <Text style={styles.detail}>🌍 Country: {cow.country}</Text>
-                <Text style={styles.detail}>🐄 Breed: {cow.breed}</Text>
-              </View>
-            ))}
+        {image && (
+          <>
+            <Image source={{ uri: image }} style={styles.image} />
+            <Text style={styles.imageText}>{text}</Text>
+            <View style={localStyles.detailsContainer}>
+              <Text style={localStyles.detailsTitle}>Processing Image...</Text>
+              <Text style={localStyles.detail}>
+                Please wait while we analyze the cow's tag and breed.
+              </Text>
+            </View>
+          </>
+        )}
+
+        {!image && (
+          <View style={localStyles.detailsContainer}>
+            <Text style={localStyles.detailsTitle}>No Image Uploaded</Text>
+            <Text style={localStyles.detail}>
+              Upload an image of your cow to get started!
+            </Text>
           </View>
         )}
       </ScrollView>
@@ -96,17 +152,6 @@ const localStyles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 10,
-  },
-  cowDetailBox: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
   },
   detail: {
     fontSize: 16,
