@@ -1,15 +1,14 @@
 import {
   Image,
-  StyleSheet,
   View,
   Text,
   TouchableOpacity,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
-import { uploadImageString } from "@/api/imageSend";
-import styles from "../styles/HomeScreen.styles";
 import { ScrollView } from "react-native-gesture-handler";
+import CowDetailCard from "../../components/CowDetailCard";
+import styles from "../styles/HomeScreen.styles";
 
 export default function HomeScreen() {
   const [image, setImage] = useState<string | null>(null);
@@ -43,13 +42,13 @@ export default function HomeScreen() {
       };
 
       setImage(response.data.labeled_image);
-      setCowDetails(response.data.detected_cows); 
+      setCowDetails(response.data.detected_cows);
       setText(response.data.message);
     }
   };
 
   const pickVid = async () => {
-
+    // Placeholder for video upload functionality
   };
 
   return (
@@ -63,20 +62,17 @@ export default function HomeScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* Button's */}
         <View style={styles.buttonContainer}>
-
           <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
             <Text style={styles.buttonText}>📷 Upload Image</Text>
           </TouchableOpacity>
 
-          {/* Video Button WIP */}
           <TouchableOpacity style={styles.uploadButton} onPress={pickVid}>
-            <Text style={styles.buttonText} disabled={true}>🎥 Upload Video</Text>
+            <Text style={styles.buttonText} disabled={true}>
+              🎥 Upload Video
+            </Text>
           </TouchableOpacity>
         </View>
-        
-
 
         {image && <Image source={{ uri: image }} style={styles.image} />}
         {image && <Text style={styles.imageText}>{text}</Text>}
@@ -85,12 +81,7 @@ export default function HomeScreen() {
           <View style={styles.detailsContainer}>
             <Text style={styles.detailsTitle}>Detected Cows:</Text>
             {cowDetails.map((cow, index) => (
-              <View key={index} style={styles.cowDetailBox}>
-                <Text style={styles.detail}>🐮 Tag: {cow.tag}</Text>
-                <Text style={styles.detail}>📅 Age: {cow.age}</Text>
-                <Text style={styles.detail}>🌍 Country: {cow.country}</Text>
-                <Text style={styles.detail}>🐄 Breed: {cow.breed}</Text>
-              </View>
+              <CowDetailCard key={index} cow={cow} />
             ))}
           </View>
         )}
@@ -98,33 +89,3 @@ export default function HomeScreen() {
     </View>
   );
 }
-
-const localStyles = StyleSheet.create({
-  detailsContainer: {
-    marginTop: 20,
-    padding: 10,
-    backgroundColor: "#f8f8f8",
-    borderRadius: 10,
-    width: "100%",
-  },
-  detailsTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  cowDetailBox: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
-  },
-  detail: {
-    fontSize: 16,
-    marginVertical: 2,
-  },
-});
