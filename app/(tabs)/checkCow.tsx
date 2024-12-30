@@ -8,7 +8,7 @@ import {
   ScrollView,
 } from "react-native";
 import styles from "../styles/HomeScreen.styles";
-import CowDetailCard from "../../components/CowDetailCard"; // Import the reusable component
+import CowDetailCard from "../../components/CowDetailCard";
 
 export default function CheckCow() {
   const [cowTag, setCowTag] = useState("");
@@ -66,7 +66,7 @@ export default function CheckCow() {
               <Text style={loc_styles.error}>{cowDetails[0].error}</Text>
             ) : (
               cowDetails.map((cow, index) => (
-                <CowDetailCard key={index} cow={cow} /> // Reuse the CowDetailCard component
+                <CowDetailCard key={index} cow={cow} />
               ))
             )}
           </>
@@ -78,7 +78,7 @@ export default function CheckCow() {
 
 const loc_styles = StyleSheet.create({
   inputContainer: {
-    alignItems: "center", // Center the input and button
+    alignItems: "center",
     justifyContent: "center",
     marginVertical: 20,
   },
@@ -110,7 +110,7 @@ const loc_styles = StyleSheet.create({
     marginTop: 30,
     paddingHorizontal: 20,
     paddingBottom: 50,
-    alignItems: "center", // Align cards in the center
+    alignItems: "center",
   },
   error: {
     fontSize: 18,

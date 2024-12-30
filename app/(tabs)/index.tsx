@@ -48,7 +48,7 @@ export default function HomeScreen() {
   };
 
   const pickVid = async () => {
-    // Placeholder for video upload functionality
+    // placeholder for video upload functionality
   };
 
   return (

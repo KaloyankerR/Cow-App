@@ -1,18 +1,26 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from "react-native";
+import { View, Text, TouchableOpacity, TextInput, Alert } from "react-native";
+import styles from "../app/styles/CowDetailCard.styles";
 
 export default function CowDetailCard({ cow }) {
   const [isReporting, setIsReporting] = useState(false);
   const [reportText, setReportText] = useState("");
+  const [cardBorderColor, setCardBorderColor] = useState("#ccc");
 
   const handleReportSubmit = () => {
     Alert.alert("Mismatch Reported", `Thank you for your feedback: ${reportText}`);
     setIsReporting(false);
-    setReportText(""); // Clear the input after submission
+    setReportText("");
+    setCardBorderColor("#D32F2F");
+  };
+
+  const handleConfirm = () => {
+    Alert.alert("Confirmed", `Thank you for confirming this cow's information!`);
+    setCardBorderColor("#388E3C");
   };
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { borderColor: cardBorderColor, borderWidth: 3 }]}>
       <Text style={styles.detail}>🐮 Tag: {cow.tag}</Text>
       <Text style={styles.detail}>📅 Age: {cow.age}</Text>
       <Text style={styles.detail}>🌍 Country: {cow.country}</Text>
@@ -32,66 +40,19 @@ export default function CowDetailCard({ cow }) {
           </TouchableOpacity>
         </View>
       ) : (
-        <TouchableOpacity
-          style={styles.reportButton}
-          onPress={() => setIsReporting(true)}
-        >
-          <Text style={styles.reportButtonText}>Report Mismatch</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
+            <Text style={styles.confirmButtonText}>Confirm Identification</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.reportButton}
+            onPress={() => setIsReporting(true)}
+          >
+            <Text style={styles.reportButtonText}>Report Mismatch</Text>
+          </TouchableOpacity>
+        </View>
       )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 16,
-    marginVertical: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  detail: {
-    fontSize: 16,
-    marginBottom: 8,
-    color: "#333",
-  },
-  reportButton: {
-    backgroundColor: "#f44336",
-    padding: 10,
-    borderRadius: 4,
-    marginTop: 8,
-  },
-  reportButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  reportContainer: {
-    marginTop: 8,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 4,
-    padding: 10,
-    marginBottom: 8,
-    backgroundColor: "#f9f9f9",
-  },
-  submitButton: {
-    backgroundColor: "#4CAF50",
-    padding: 10,
-    borderRadius: 4,
-  },
-  submitButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-});
