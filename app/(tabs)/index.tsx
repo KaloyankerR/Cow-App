@@ -3,6 +3,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  ActivityIndicator
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
@@ -11,10 +12,12 @@ import CowDetailCard from "../../components/CowDetailCard";
 import styles from "../styles/HomeScreen.styles";
 
 export default function HomeScreen() {
+
   const [image, setImage] = useState<string | null>(null);
   const [text, setText] = useState<string | null>(
     "🐮 Moo-tastic! Image Uploaded! Detecting breed and tag information..."
   );
+
   const [cowDetails, setCowDetails] = useState([]);
 
   const pickImage = async () => {
@@ -53,16 +56,17 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
+
       <View style={styles.headerContainer}>
+
         <Text style={styles.header}>Cow Identifier for</Text>
         <Text style={styles.header}>DAP Thewi</Text>
-        <Text style={styles.subheader}>
-          Upload an image to identify your cow by tag and color breed
-        </Text>
+        <Text style={styles.subheader}>Upload an image to identify your cow by tag and color breed</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.buttonContainer}>
+
           <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
             <Text style={styles.buttonText}>📷 Upload Image</Text>
           </TouchableOpacity>
@@ -72,6 +76,7 @@ export default function HomeScreen() {
               🎥 Upload Video
             </Text>
           </TouchableOpacity>
+          
         </View>
 
         {image && <Image source={{ uri: image }} style={styles.image} />}

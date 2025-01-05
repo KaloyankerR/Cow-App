@@ -3,15 +3,15 @@ import { StyleSheet } from "react-native";
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FAF3E3",
+    backgroundColor: "#f2f2f2",
   },
   headerContainer: {
     padding: 20,
     marginTop: 40,
-    backgroundColor: "#FAF3E3",
+    backgroundColor: "#ffffff",
     alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: "#D2B48C",
+    borderBottomColor: "#ffffff",
   },
   header: {
     fontSize: 28,
