@@ -10,6 +10,7 @@ import { useState } from "react";
 import { ScrollView } from "react-native-gesture-handler";
 import CowDetailCard from "../../components/CowDetailCard";
 import styles from "../styles/HomeScreen.styles";
+import Popup from "@/components/Popup_CowInfo/CowPU";
 
 export default function HomeScreen() {
 
@@ -19,6 +20,13 @@ export default function HomeScreen() {
   );
 
   const [cowDetails, setCowDetails] = useState([]);
+  const [isPopUpVis, setPopUpVis] = useState(true);
+
+
+  const togglePopup = () => {
+    setPopUpVis(!isPopUpVis)
+    console.log(`Ok, pressed; state = ${isPopUpVis}`)
+  };
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -47,11 +55,15 @@ export default function HomeScreen() {
       setImage(response.data.labeled_image);
       setCowDetails(response.data.detected_cows);
       setText(response.data.message);
+      
+      // Quick debug to see what the responses are!
+      console.log(response.data.message)
     }
   };
 
   const pickVid = async () => {
     // placeholder for video upload functionality
+    togglePopup()
   };
 
   return (
@@ -65,6 +77,12 @@ export default function HomeScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContainer}>
+
+        {/* pop up! */}
+        <Popup visible={isPopUpVis} onClose={togglePopup} />
+
+
+
         <View style={styles.buttonContainer}>
 
           <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
@@ -73,7 +91,7 @@ export default function HomeScreen() {
 
           <TouchableOpacity style={styles.uploadButton} onPress={pickVid}>
             <Text style={styles.buttonText} disabled={true}>
-              🎥 Upload Video
+              (DEBUG) Opens Pop up
             </Text>
           </TouchableOpacity>
           
