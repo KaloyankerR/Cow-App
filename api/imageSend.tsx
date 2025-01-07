@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 
-const BASE_URL = " http://192.168.178.206:8000";
+const BASE_URL = "http://145.93.61.10:8000";
 
 export const uploadImage = async (file: File): Promise<string> => {
   const formData2 = new FormData();
@@ -31,22 +31,24 @@ export const uploadImageString = async (
 ): Promise<AxiosResponse> => {
   try {
     console.log("Here");
+    console.log("Here2");
+    console.log(value);
     const response = await axios.post(`${BASE_URL}/uploadString/`, {
       headers: { "Content-Type": "text/plain" },
       data: {
         value: value,
       },
     });
-    console.log("Here2");
+    console.log("Here3");
     // Check if the expected data is present
-    if (response.data && response.data.message) {
+    if (response.data) {
       return response;
     } else {
       throw new Error("Unexpected server response structure.");
     }
   } catch (error: any) {
     //console.log(imageUri);
-    console.error("Error uploading image:", error || error);
+    console.error(error);
     throw new Error("Failed to upload image. Please try again later.");
   }
 };

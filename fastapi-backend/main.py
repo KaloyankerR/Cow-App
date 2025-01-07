@@ -95,7 +95,7 @@ def find_closest_matches(log,img_path, levenshtein_threshold=2, excel_path="Data
             # Check for exact match
             if detected_text in valid_numbers:
                 print(f"Exact match found for '{detected_text}'")
-                log.append(f"Exact match found for '{detected_text}'")
+                #log.append(f"Exact match found for '{detected_text}'")
                 results[detected_text] = [detected_text]  # Return exact match as only result
             else:
                 # Calculate closest match using Levenshtein distance
@@ -106,11 +106,11 @@ def find_closest_matches(log,img_path, levenshtein_threshold=2, excel_path="Data
                 if closest_distance <= levenshtein_threshold:
                     if len(closest_matches) == 1 and closest_matches[0] == detected_text:
                         print(f"Single close match found for '{detected_text}': {closest_matches[0]} with distance {closest_distance}")
-                        log.append('\n' + f"Single close match found for '{detected_text}': {closest_matches[0]} with distance {closest_distance}")
+                        #log.append('\n' + f"Single close match found for '{detected_text}': {closest_matches[0]} with distance {closest_distance}")
                         results[detected_text] = closest_matches
                     else:
                         print(f"Multiple matches found for '{detected_text}': {closest_matches} with distance {closest_distance}")
-                        log.append(f"Multiple matches found for '{detected_text}': {closest_matches} with distance {closest_distance}")
+                        #log.append(f"Multiple matches found for '{detected_text}': {closest_matches} with distance {closest_distance}")
                         results[detected_text] = closest_matches
                 else:
                     print(f"No close match found for '{detected_text}' (closest was '{closest_matches[0]}' with distance {closest_distance})")
