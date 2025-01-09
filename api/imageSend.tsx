@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 
-const BASE_URL = "http://192.168.2.15:8000";
+const BASE_URL = "http://192.168.2.17:8000";
 
 export const uploadImage = async (file: File): Promise<string> => {
   const formData2 = new FormData();

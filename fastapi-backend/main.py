@@ -15,7 +15,6 @@ import urllib
 from paddleocr import PaddleOCR
 from Levenshtein import distance as levenshtein_distance
 import re
-from sqlalchemy.orm import sessionmaker
 
 app = FastAPI()
 
@@ -109,7 +108,7 @@ def preprocess_image(img):
     return dilated_img
 
 def extract_text_from_image(processed_img):
-    ocr = PaddleOCR(use_angle_cls=True, lang='en')
+    ocr = PaddleOCR(use_angle_cls=True, lang='en',use_gpu = False)
     results = ocr.ocr(processed_img, cls=False)
     
     detected_texts = []

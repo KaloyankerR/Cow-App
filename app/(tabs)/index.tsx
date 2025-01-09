@@ -56,7 +56,7 @@ export default function HomeScreen() {
       //);
       //await uploadImage(file);
       console.log("Imagw");
-      console.log(result.assets[0].base64);
+      // console.log(result.assets[0].base64);
       const response = await uploadImageString(
         "data:image/jpeg;base64," + result.assets[0].base64
       );
