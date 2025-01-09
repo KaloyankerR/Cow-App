@@ -31,7 +31,10 @@ const styles = StyleSheet.create({
     //padding: 20,
     //paddingBottom: 50, // Add padding to avoid clipping at the bottom
   },
-
+  detectedCowsContainer: {
+    flex: 1,
+    flexDirection: "row"
+  },
   uploadButton: {
     backgroundColor: "#8B5E3C",
     paddingVertical: 15,

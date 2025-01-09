@@ -9,6 +9,7 @@ import {Modal, View, Text, StyleSheet, TouchableOpacity, Dimensions, Image} from
 const screenWidth = Dimensions.get('window').width;
 const isMobile = screenWidth < 768;
 
+//const [cowInfo, setCowInfo] = useState([]);
 
 const styles = StyleSheet.create({
     overlay: {
@@ -18,8 +19,8 @@ const styles = StyleSheet.create({
       backgroundColor: 'rgba(0, 0, 0, 0.5)', // Transparent background
     },
     popup: {
-      width: Dimensions.get('window').width * 0.8,
-      height: Dimensions.get('window').height * 0.6,
+      width: "80vw",
+      height: "55vh",
       padding: 20,
       backgroundColor: 'white',
       borderRadius: 10,
@@ -90,9 +91,8 @@ const styles = StyleSheet.create({
         shadowRadius: 3.84,
     }, 
     cowImage: {
-        minWidth: Dimensions.get('window').width * 0.30,
-        minHeight: Dimensions.get('window').width * 0.30,
-        
+        minHeight: "44vh",
+        minWidth:"32vw",
         maxWidth: Dimensions.get('window').width * 0.30,
         maxHeight: Dimensions.get('window').height * 0.30,
         borderRadius: 12,
@@ -105,8 +105,15 @@ const styles = StyleSheet.create({
         shadowRadius: 3.84,
     },
     cowDataText: {
+        // display: "block",
         fontSize:17,
-        height:30
+        // backgroundColor: "grey",
+        marginTop: 10,
+        width: "42vw",
+        padding: 10,
+        borderBottomColor: "grey",
+        borderBottomWidth: 1,
+        fontWeight: "440"
     },
     cowDataTextMobile: {
         fontSize: 19,
@@ -116,7 +123,7 @@ const styles = StyleSheet.create({
 
 
 
-const Popup = ({visible, onClose}) => {
+const Popup = ({visible, onClose, cowData}) => {
     return (
     <Modal transparent={true} visible={visible} animationType='fade' onRequestClose={onClose}>
         <View style={styles.overlay}>
@@ -128,6 +135,7 @@ const Popup = ({visible, onClose}) => {
                 <View style={isMobile ? styles.contentMobile : styles.content}>
                     {/* Information of the cow */}
                     <View style={isMobile ? styles.cowImgContainerMobile : styles.cowImgContainer}>
+                        {/* Should be replaced with the actual cow image. */}
                         <Image style={isMobile ? styles.cowImageMobile : styles.cowImage} source={{
                             uri: "https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png", 
                         }}
@@ -136,10 +144,13 @@ const Popup = ({visible, onClose}) => {
                     
 
                     <View style={isMobile ? styles.cowDataContainerMobile : styles.cowDataContainer}>
-                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Full Number: BE429940016</Text>
-                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Country: Belgium</Text>
-                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Birthdate: 15-06-2024</Text>
-                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Company: Kupersvee B.V</Text>
+                        
+                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Work Number: {cowData.tag}</Text>
+                        {/* <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>ID Number: {cowData}</Text> */}
+                        {/* <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Full Number: BE429940016 {console.log(cowData)}</Text> */}
+                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Country: {cowData.country}</Text>
+                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Age: {cowData.age} Birthdate: 15-06-2024</Text>
+                        {/* <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Company: Kupersvee B.V</Text> */}
                         <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Color: Zwart-wit</Text>
                     </View>
 

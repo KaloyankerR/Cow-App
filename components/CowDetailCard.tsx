@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, TextInput, Alert } from "react-native";
 import styles from "../app/styles/CowDetailCard.styles";
 
-export default function CowDetailCard({ cow }) {
+export default function CowDetailCard({ cow, clicked}) {
   const [isReporting, setIsReporting] = useState(false);
   const [reportText, setReportText] = useState("");
   const [cardBorderColor, setCardBorderColor] = useState("#ccc");
@@ -20,39 +20,41 @@ export default function CowDetailCard({ cow }) {
   };
 
   return (
-    <View style={[styles.card, { borderColor: cardBorderColor, borderWidth: 3 }]}>
-      <Text style={styles.detail}>🐮 Tag: {cow.tag}</Text>
-      <Text style={styles.detail}>📅 Age: {cow.age}</Text>
-      <Text style={styles.detail}>🌍 Country: {cow.country}</Text>
-      <Text style={styles.detail}>🐄 Breed: {cow.breed}</Text>
+    <TouchableOpacity  onPress={clicked}>
+      <View style={[styles.card, { borderColor: cardBorderColor, borderWidth: 3 }]} >
+        <Text style={styles.detail}>🐮 Tag: {cow.tag}</Text>
+        <Text style={styles.detail}>📅 Age: {cow.age}</Text>
+        <Text style={styles.detail}>🌍 Country: {cow.country}</Text>
+        <Text style={styles.detail}>🐄 Breed: {cow.breed}</Text>
 
-      {isReporting ? (
-        <View style={styles.reportContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Describe the mismatch..."
-            value={reportText}
-            onChangeText={setReportText}
-            multiline
-          />
-          <TouchableOpacity style={styles.submitButton} onPress={handleReportSubmit}>
-            <Text style={styles.submitButtonText}>Submit Report</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
-            <Text style={styles.confirmButtonText}>Confirm Identification</Text>
-          </TouchableOpacity>
+        {isReporting ? (
+          <View style={styles.reportContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Describe the mismatch..."
+              value={reportText}
+              onChangeText={setReportText}
+              multiline
+            />
+            <TouchableOpacity style={styles.submitButton} onPress={handleReportSubmit}>
+              <Text style={styles.submitButtonText}>Submit Report</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
+              <Text style={styles.confirmButtonText}>Confirm Identification</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.reportButton}
-            onPress={() => setIsReporting(true)}
-          >
-            <Text style={styles.reportButtonText}>Report Mismatch</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
+            <TouchableOpacity
+              style={styles.reportButton}
+              onPress={() => setIsReporting(true)}
+            >
+              <Text style={styles.reportButtonText}>Report Mismatch</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    </TouchableOpacity>
   );
 }

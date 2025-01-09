@@ -20,13 +20,18 @@ export default function HomeScreen() {
   );
 
   const [cowDetails, setCowDetails] = useState([]);
-  const [isPopUpVis, setPopUpVis] = useState(true);
-
+  const [isPopUpVis, setPopUpVis] = useState(false);
+  const [cowDataPU, setCowDataPU] = useState({})
 
   const togglePopup = () => {
     setPopUpVis(!isPopUpVis)
     console.log(`Ok, pressed; state = ${isPopUpVis}`)
   };
+
+  const passInformationToPopUp = (cow: {}) => {
+    setCowDataPU(cow);
+    togglePopup();
+  }
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -57,6 +62,7 @@ export default function HomeScreen() {
       setText(response.data.message);
       
       // Quick debug to see what the responses are!
+      console.log("Information we got back!");
       console.log(response.data.message)
     }
   };
@@ -79,7 +85,7 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
 
         {/* pop up! */}
-        <Popup visible={isPopUpVis} onClose={togglePopup} />
+        <Popup visible={isPopUpVis} onClose={togglePopup} cowData={cowDataPU}/>
 
 
 
@@ -103,9 +109,12 @@ export default function HomeScreen() {
         {cowDetails.length > 0 && (
           <View style={styles.detailsContainer}>
             <Text style={styles.detailsTitle}>Detected Cows:</Text>
-            {cowDetails.map((cow, index) => (
-              <CowDetailCard key={index} cow={cow} />
-            ))}
+            <View style={styles.detectedCowsContainer}>
+              {cowDetails.map((cow, index) => (
+                <CowDetailCard key={index} cow={cow} clicked={() => passInformationToPopUp(cow)}/>
+              ))}
+            </View>
+            
           </View>
         )}
       </ScrollView>
