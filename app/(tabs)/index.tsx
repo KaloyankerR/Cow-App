@@ -7,11 +7,14 @@ import {
 } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import * as ImagePicker from "expo-image-picker";
+import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { useState } from "react";
-import { ScrollView } from "react-native-gesture-handler";
-import CowDetailCard from "../../components/CowDetailCard";
+import { uploadImage, uploadImage2, uploadImageString } from "@/api/imageSend";
+import ImagePickerReact from "react-native-image-picker";
 import styles from "../styles/HomeScreen.styles";
+import { ScrollView } from "react-native-gesture-handler";
 import Popup from "@/components/Popup_CowInfo/CowPU";
+
 
 export default function HomeScreen() {
 
@@ -59,16 +62,11 @@ export default function HomeScreen() {
       );
       setImage("data:image/jpeg;base64," + response.data.labeled_image);
       setText(response.data.message);
-      
+      setCowDetails(response.data)
       // Quick debug to see what the responses are!
       console.log("Information we got back!");
-      console.log(response.data.message)
+      console.log(response.data)
     }
-  };
-
-  const pickVid = async () => {
-    // placeholder for video upload functionality
-    togglePopup()
   };
 
   return (
@@ -87,23 +85,7 @@ export default function HomeScreen() {
         <Popup visible={isPopUpVis} onClose={togglePopup} cowData={cowDataPU}/>
 
 
-
-        <View style={styles.buttonContainer}>
-
-          <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-            <Text style={styles.buttonText}>📷 Upload Image</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.uploadButton} onPress={pickVid}>
-            <Text style={styles.buttonText} disabled={true}>
-              (DEBUG) Opens Pop up
-            </Text>
-          </TouchableOpacity>
-          
-        </View>
-
         {image && <Image source={{ uri: image }} style={styles.image} />}
-        {image && <Text style={styles.imageText}>{text}</Text>}
 
         {cowDetails.length > 0 && (
           <View style={styles.detailsContainer}>
@@ -116,6 +98,19 @@ export default function HomeScreen() {
             
           </View>
         )}
+
+
+
+        <View style={styles.buttonContainer}>
+
+          <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
+            <Text style={styles.buttonText}>📷 Upload Image</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* {image && <Text style={styles.imageText}>{text}</Text>} */}
+
+        
       </ScrollView>
     </View>
   );

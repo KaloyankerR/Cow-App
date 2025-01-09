@@ -70,8 +70,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   image: {
-    width: 350,
-    height: 250,
+    width: "50vw",
+    height: "45vh",
     borderRadius: 20,
     marginTop: 20,
     borderWidth: 3,
