@@ -9,6 +9,8 @@ import {Modal, View, Text, StyleSheet, TouchableOpacity, Dimensions, Image} from
 const screenWidth = Dimensions.get('window').width;
 const isMobile = screenWidth < 768;
 
+
+
 //const [cowInfo, setCowInfo] = useState([]);
 
 const styles = StyleSheet.create({
@@ -123,7 +125,7 @@ const styles = StyleSheet.create({
 
 
 
-const Popup = ({visible, onClose, cowData}) => {
+const Popup = ({visible, onClose, cowData, imgURL}) => {
     return (
     <Modal transparent={true} visible={visible} animationType='fade' onRequestClose={onClose}>
         <View style={styles.overlay}>
