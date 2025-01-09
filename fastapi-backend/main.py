@@ -122,6 +122,28 @@ def find_closest_matches(img_path, levenshtein_threshold=2, excel_path="Data/Cow
         if text.isdigit() and 4 <= len(text) <= 6:
             work_numbers.append(text)
 
+            # Check for exact match
+            if detected_text in valid_numbers:
+                print(f"Exact match found for '{detected_text}'")
+                #log.append(f"Exact match found for '{detected_text}'")
+                results[detected_text] = [detected_text]  # Return exact match as only result
+            else:
+                # Calculate closest match using Levenshtein distance
+                closest_distance = min(levenshtein_distance(detected_text, num) for num in valid_numbers)
+                closest_matches = [num for num in valid_numbers if levenshtein_distance(detected_text, num) == closest_distance]
+                
+                # Check if closest match is within the threshold
+                if closest_distance <= levenshtein_threshold:
+                    if len(closest_matches) == 1 and closest_matches[0] == detected_text:
+                        print(f"Single close match found for '{detected_text}': {closest_matches[0]} with distance {closest_distance}")
+                        #log.append('\n' + f"Single close match found for '{detected_text}': {closest_matches[0]} with distance {closest_distance}")
+                        results[detected_text] = closest_matches
+                    else:
+                        print(f"Multiple matches found for '{detected_text}': {closest_matches} with distance {closest_distance}")
+                        #log.append(f"Multiple matches found for '{detected_text}': {closest_matches} with distance {closest_distance}")
+                        results[detected_text] = closest_matches
+                else:
+                    print(f"No close match found for '{detected_text}' (closest was '{closest_matches[0]}' with distance {closest_distance})")
 
     if country_codes and work_numbers and unique_codes:
 

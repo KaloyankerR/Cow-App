@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   ActivityIndicator
 } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import { ScrollView } from "react-native-gesture-handler";
@@ -36,7 +37,7 @@ export default function HomeScreen() {
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"], // Choose only images
       base64: true,
     });
 
@@ -45,20 +46,18 @@ export default function HomeScreen() {
         "🐮 Moo-tastic! Image Uploaded! Detecting breed and tag information..."
       );
       setImage("data:image/jpeg;base64," + result.assets[0].base64);
-
-      const response = {
-        data: {
-          labeled_image: "data:image/jpeg;base64," + result.assets[0].base64,
-          message: "Detection successful!",
-          detected_cows: [
-            { tag: "12345", breed: "Holstein", age: "5 years", country: "Netherlands" },
-            { tag: "67890", breed: "Jersey", age: "3 years", country: "USA" },
-          ],
-        },
-      };
-
-      setImage(response.data.labeled_image);
-      setCowDetails(response.data.detected_cows);
+      //console.log("file");
+      //const file = await convertToFile(
+      //  "data:image/jpeg;base64," + result.assets[0].base64,
+      //  "selected-image.jpg"
+      //);
+      //await uploadImage(file);
+      console.log("Imagw");
+      console.log(result.assets[0].base64);
+      const response = await uploadImageString(
+        "data:image/jpeg;base64," + result.assets[0].base64
+      );
+      setImage("data:image/jpeg;base64," + response.data.labeled_image);
       setText(response.data.message);
       
       // Quick debug to see what the responses are!
