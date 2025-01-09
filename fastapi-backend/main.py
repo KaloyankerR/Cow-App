@@ -350,21 +350,29 @@ def scanImage(image_name):
                 # Pass in-memory image data to OCR or other processing functions
                 detected_texts, results = find_closest_matches(cropped_image_bytes)
                 
+                logChildren = []
+
                 for result in results:
                     if result['match_type'] == 'error':
-                        log.append(f"Error processing cropped image {idx}: {result['message']}")
+                        logChildren.append(f"Error processing cropped image {idx}: {result['message']}")
                     elif result['match_type'] == 'warning':
-                        log.append(f"Warning for cropped image {idx}: {result['message']}")
+                        logChildren.append(f"Warning for cropped image {idx}: {result['message']}")
                     elif result['match_type'] == 'full_tag':
-                        log.append(f"Found full tag match: {result['matched_value']}")
+                        logChildren.append(f"Found full tag match: {result['matched_value']}")
                     elif result['match_type'] == 'work_number':
-                        log.append(f"Found work number match: {result['matched_value']}")
+                        logChildren.append(f"Found work number match: {result['matched_value']}")
                     elif result['match_type'] == 'levenshtein':
                         matches_str = ', '.join(result['closest_matches'])
-                        log.append(f"Found similar matches for '{result['original_text']}': {matches_str} (distance: {result['distance']})")
+                        logChildren.append(f"Found similar matches for '{result['original_text']}': {matches_str} (distance: {result['distance']})")
+                
+
+
             except Exception as e:
                 log.append(f"Error processing cropped image {idx}: {str(e)}")
                 continue
+            finally:
+                log.append(logChildren)
+                break
 
         # Process hair color
         try:
