@@ -37,7 +37,7 @@ rf = Roboflow(api_key="s4CoCObGq01fLML1N0Ej")
 #project = rf.workspace().project("cows-gyup1")
 project = rf.workspace().project("cow-video-detection-l7zod")
 model = project.version(2).model
-
+ocr = PaddleOCR(use_angle_cls=True, lang='en',use_gpu = False)
 
 
 def resize_image(input_path,output_path ,max_width, max_height):
@@ -143,7 +143,7 @@ def preprocess_image(img):
     return dilated_img
 
 def extract_text_from_image(processed_img):
-    ocr = PaddleOCR(use_angle_cls=True, lang='en',use_gpu = False)
+    print("started")
     results = ocr.ocr(processed_img, cls=False)
     
     detected_texts = []
@@ -153,7 +153,7 @@ def extract_text_from_image(processed_img):
             clean_text = text.replace(" ", "")
             if clean_text:
                 detected_texts.append(clean_text)
-    
+    print("finished")
     return detected_texts, confidence
 
 def find_closest_matches(img_bytes, cow_bytes, levenshtein_threshold=2, excel_path="Data/CowInfo.xlsx"):
@@ -429,7 +429,32 @@ async def upload_image(file: UploadFile = File(...)):
 
 class Item(BaseModel):
     value: str
+@app.post("/uploadVideoString/")
+async def upload_vidoeString(request: Request):
+    body = await request.body()  # Raw bytes
+    data = body.decode("utf-8")
+    video = data[58:]
+    video = video[:-3]
 
+    response = urllib.request.urlopen(video)
+    with open('video.mp4', 'wb') as f:
+        f.write(response.file.read())
+
+
+    vidObj = cv2.VideoCapture("video.mp4") 
+  
+    count = 0
+
+    success = 1
+    frames = []
+    while success: 
+        success, image = vidObj.read() 
+        frames.append(image)
+        count += 1
+
+    print("Done")
+    print(len(frames))
+    return {"message": "done", "labeled_image": "s"}
 @app.post("/uploadString/")
 async def upload_imageString(request: Request):
     body = await request.body()
