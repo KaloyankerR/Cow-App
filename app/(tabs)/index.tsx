@@ -9,12 +9,11 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import * as ImagePicker from "expo-image-picker";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { useState } from "react";
-import { uploadImage, uploadImage2, uploadImageString } from "@/api/imageSend";
+import { uploadImage, uploadImage2, uploadImageString,uploadVideoString } from "@/api/imageSend";
 import ImagePickerReact from "react-native-image-picker";
 import styles from "../styles/HomeScreen.styles";
 import { ScrollView } from "react-native-gesture-handler";
-import Popup from "@/components/Popup_CowInfo/CowPU";
-
+import * as FileSystem from 'expo-file-system';
 
 export default function HomeScreen() {
 
@@ -39,8 +38,10 @@ export default function HomeScreen() {
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    let response;
+    // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"], // Choose only images
+      mediaTypes: ["images", "videos"], // Choose only images
       base64: true,
     });
 
@@ -49,23 +50,32 @@ export default function HomeScreen() {
         "🐮 Moo-tastic! Image Uploaded! Detecting breed and tag information..."
       );
       setImage("data:image/jpeg;base64," + result.assets[0].base64);
-      //console.log("file");
-      //const file = await convertToFile(
-      //  "data:image/jpeg;base64," + result.assets[0].base64,
-      //  "selected-image.jpg"
-      //);
-      //await uploadImage(file);
-      console.log("Imagw");
-      // console.log(result.assets[0].base64);
-      const response = await uploadImageString(
-        "data:image/jpeg;base64," + result.assets[0].base64
-      );
+
+      if (result.assets[0].type == "image") {
+        response = await uploadImageString(
+          "data:image/jpeg;base64," + result.assets[0].base64
+        );
+      } else {
+        if (
+          !result.assets[0].uri ||
+          !result.assets[0].fileName ||
+          !result.assets[0].type
+        ) {
+          throw new Error("Invalid video file. Missing required properties.");
+        }
+
+        const base64 = await FileSystem.readAsStringAsync(
+          result.assets[0].uri,
+          {
+            encoding: "base64",
+          }
+        );
+
+        response = await uploadVideoString("data:video/mp4;base64," + base64);
+      }
+
       setImage("data:image/jpeg;base64," + response.data.labeled_image);
       setText(response.data.message);
-      setCowDetails(response.data)
-      // Quick debug to see what the responses are!
-      console.log("Information we got back!");
-      console.log(response.data)
     }
   };
 

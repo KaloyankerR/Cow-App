@@ -8,13 +8,14 @@ import numpy as np
 import os
 import shutil
 import io
-from PIL import Image
+from PIL import Image, ExifTags
 import glob
 import pandas as pd
 import urllib
 from paddleocr import PaddleOCR
 from Levenshtein import distance as levenshtein_distance
 import re
+import json
 
 app = FastAPI()
 
@@ -27,19 +28,60 @@ app.add_middleware(
 )
 
 # Roboflow setup
-rf = Roboflow(api_key="qX0aQQBnqLywhVFmlU4C")
-#rf = Roboflow(api_key="s4CoCObGq01fLML1N0Ej")
-project = rf.workspace().project("cows-gyup1")
-#project = rf.workspace().project("cow-video-detection-l7zod")
-model = project.version(2).model
-
 rf2 = Roboflow(api_key="IxBbH3p5wJVfT83GdUsz")
 project2 = rf2.workspace().project("cow-hair-colors")
 model_hair = project2.version(1).model
 
+#rf = Roboflow(api_key="qX0aQQBnqLywhVFmlU4C")
+rf = Roboflow(api_key="s4CoCObGq01fLML1N0Ej")
+#project = rf.workspace().project("cows-gyup1")
+project = rf.workspace().project("cow-video-detection-l7zod")
+model = project.version(2).model
+ocr = PaddleOCR(use_angle_cls=True, lang='en',use_gpu = False)
 
 
-def save_or_update_cow(work_number, image, confidence, save_directory="saved_images"):
+def resize_image(input_path,output_path ,max_width, max_height):
+    with Image.open(input_path) as img:
+        # Normalize EXIF orientation
+        try:
+            for orientation in ExifTags.TAGS.keys():
+                if ExifTags.TAGS[orientation] == "Orientation":
+                    break
+            exif = img._getexif()
+            if exif is not None:
+                orientation_value = exif.get(orientation, None)
+                if orientation_value == 3:  # Rotated 180 degrees
+                    img = img.rotate(180, expand=True)
+                elif orientation_value == 6:  # Rotated 270 degrees counter-clockwise
+                    img = img.rotate(270, expand=True)
+                elif orientation_value == 8:  # Rotated 90 degrees counter-clockwise
+                    img = img.rotate(90, expand=True)
+        except Exception as e:
+            print(f"Warning: Could not process EXIF orientation due to {e}")
+
+        # Get corrected dimensions
+        width, height = img.size
+        print(f"Corrected Width: {width}, Corrected Height: {height}")
+
+        # Determine the orientation and appropriate scaling factor
+        if width > height:  # Landscape orientation
+            max_width=2048
+            scaling_factor = min(max_width / width, max_height / height)
+        else:  # Portrait orientation
+            max_height = 2048
+            scaling_factor = min(max_height / height, max_width / width)
+
+        # Calculate new dimensions while preserving aspect ratio
+        new_width = int(width * scaling_factor)
+        new_height = int(height * scaling_factor)
+        print(f"New Width: {new_width}, New Height: {new_height}")
+
+        # Resize the image
+        img = img.resize((new_width, new_height), Image.LANCZOS)
+        img.save(output_path)
+        return output_path
+
+def save_or_update_cow(work_number, cow_image_bytes, confidence, save_directory="saved_images"):
     if confidence < 0.85:
         print(f"Confidence {confidence:.2f} is below threshold. Skipping save for {work_number}.")
         return
@@ -50,21 +92,14 @@ def save_or_update_cow(work_number, image, confidence, save_directory="saved_ima
     # Determine the save path
     save_path = os.path.join(save_directory, f"{work_number}.jpg")
 
-    # Handle case where image is a path
-    if isinstance(image, str):
-        if not os.path.isfile(image):
-            print(f"Provided image path does not exist: {image}")
-            return
-        # Copy the image to the save path
-        shutil.copy(image, save_path)
-    elif isinstance(image, Image.Image):
-        # Save the PIL Image object to the save path
-        image.save(save_path)
-    else:
-        print("Invalid image format. Provide a file path or a PIL Image object.")
+    try:
+        # Save the image bytes directly to file
+        with open(save_path, "wb") as f:
+            f.write(cow_image_bytes)
+        print(f"Image saved/updated successfully: {save_path}")
+    except Exception as e:
+        print(f"Error saving image for {work_number}: {str(e)}")
         return
-
-    print(f"Image saved/updated successfully: {save_path}")
     
 # Country codes mapping
 COUNTRY_CODES = {
@@ -108,7 +143,7 @@ def preprocess_image(img):
     return dilated_img
 
 def extract_text_from_image(processed_img):
-    ocr = PaddleOCR(use_angle_cls=True, lang='en',use_gpu = False)
+    print("started")
     results = ocr.ocr(processed_img, cls=False)
     
     detected_texts = []
@@ -118,10 +153,10 @@ def extract_text_from_image(processed_img):
             clean_text = text.replace(" ", "")
             if clean_text:
                 detected_texts.append(clean_text)
-    
+    print("finished")
     return detected_texts, confidence
 
-def find_closest_matches(img_bytes, levenshtein_threshold=2, excel_path="Data/CowInfo.xlsx"):
+def find_closest_matches(img_bytes, cow_bytes, levenshtein_threshold=2, excel_path="Data/CowInfo.xlsx"):
 
     verification_results = []
     
@@ -188,6 +223,21 @@ def find_closest_matches(img_bytes, levenshtein_threshold=2, excel_path="Data/Co
                             'match_type': 'full_tag',
                             'matched_value': full_tag
                         })
+                    
+                    closest_distance = min(levenshtein_distance(full_tag, num) for num in veld4_matches)
+                    closest_matches = [
+                        num for num in veld4_matches
+                        if levenshtein_distance(full_tag, num) == closest_distance
+                    ]
+                    print(closest_distance)
+                    leve = 5
+                    if closest_distance <= leve:
+                        verification_results.append({
+                        'match_type': 'levenshtein',
+                        'original_text': text,
+                        'closest_matches': closest_matches,
+                        'distance': closest_distance
+                        })
     
     for work_number in work_numbers:
         veld3_matches = verification_df[verification_df['Veld3'].str.contains(work_number, na=False)]
@@ -196,7 +246,7 @@ def find_closest_matches(img_bytes, levenshtein_threshold=2, excel_path="Data/Co
                 'match_type': 'work_number',
                 'matched_value': work_number
             })
-            save_or_update_cow(work_number, img, confidence)
+            save_or_update_cow(work_number, cow_bytes, confidence)
     
     for text in detected_texts:
         if not any(result['matched_value'] == text for result in verification_results):
@@ -222,9 +272,12 @@ def process_image_with_cows_and_tags(image_name):
         # Check if input image exists
         if not os.path.exists(image_name):
             return "Error: Input image not found"
-
         # Detect objects (cows and tags)
         all_cords = model.predict(image_name, confidence=50, overlap=30).json()
+        all_cor = model.predict(image_name, confidence=50, overlap=30)
+        output_file = "predictions.json"
+        with open(output_file, "w") as file:
+            json.dump(all_cords, file, indent=4)
         model.predict(image_name, confidence=50, overlap=30).save(f"labeled_images/prediction.jpg")
 
         # Read the input image
@@ -237,9 +290,9 @@ def process_image_with_cows_and_tags(image_name):
         tags = [obj for obj in all_cords["predictions"] if obj['class'] == "0"]
 
         cropped_cows = []
-        cropped_tags = []
+        matched_pairs = []  # Will store tuples of (tag_image, matched_cow_image)
 
-        # Crop cow images
+        # Crop all cow images first
         for idx, cow in enumerate(cows, 1):
             roi_x = int(cow['x'] - cow['width'] / 2)
             roi_y = int(cow['y'] - cow['height'] / 2)
@@ -255,8 +308,10 @@ def process_image_with_cows_and_tags(image_name):
             roi = image[roi_y:roi_y + roi_height, roi_x:roi_x + roi_width]
             if roi is not None and roi.size > 0:
                 cropped_cows.append(roi)
+                # Store the cropped image with the cow object for matching later
+                cow['cropped_image'] = roi
 
-        # Match tags to cows based on overlap
+        # Match tags to cows and create pairs
         for tag in tags:
             tag_center_x = tag['x']
             tag_center_y = tag['y']
@@ -288,91 +343,54 @@ def process_image_with_cows_and_tags(image_name):
                 roi_width = min(roi_width, image.shape[1] - roi_x)
                 roi_height = min(roi_height, image.shape[0] - roi_y)
 
-                roi = image[roi_y:roi_y + roi_height, roi_x:roi_x + roi_width]
-                if roi is not None and roi.size > 0:
-                    cropped_tags.append((roi, matched_cow['detection_id']))
+                tag_roi = image[roi_y:roi_y + roi_height, roi_x:roi_x + roi_width]
+                if tag_roi is not None and tag_roi.size > 0:
+                    # Create tuple of (tag_image, matched_cow_image)
+                    matched_pairs.append((tag_roi, matched_cow['cropped_image']))
 
-        return cropped_cows, cropped_tags
+        return cropped_cows, matched_pairs
 
     except Exception as e:
         return f"Error: {str(e)}"
 def scanImage(image_name):
     log = []
     print("Started")
-
     try:
-        # Check if input image exists
-        if not os.path.exists(image_name):
-            return "Error: Input image not found"
-
-        # Detect tags
-        allCords = model.predict(image_name, confidence=50, overlap=30).json()
-        model.predict(image_name, confidence=50, overlap=30).save(f"labeled_images\prediction.jpg") 
-        # Read the input image
-        image = cv2.imread(image_name)
-        if image is None:
-            return "Error: Could not read input image"
-
-        # Process each detection
-        cropped_images = []
-        for idx, cordinates in enumerate(allCords["predictions"], 1):
+        max_width = 1536
+        max_height = 1536
+        output_path = 'resized_img.jpg'
+        image_name = resize_image(image_name,output_path, max_width, max_height)
+        cows, cropped_and_cows = process_image_with_cows_and_tags(image_name)
+        print("finished images")
+        # Process each matched pair (tag_image, cow_image)
+        for idx, (tag_image, cow_image) in enumerate(cropped_and_cows, 1):
             try:
-                roi_x = int(cordinates['x'] - cordinates['width'] / 2)
-                roi_y = int(cordinates['y'] - cordinates['height'] / 2)
-                roi_width = int(cordinates['width'])
-                roi_height = int(cordinates['height'])
-
-                # Add boundary checks
-                roi_x = max(0, roi_x)
-                roi_y = max(0, roi_y)
-                roi_width = min(roi_width, image.shape[1] - roi_x)
-                roi_height = min(roi_height, image.shape[0] - roi_y)
-
-                roi = image[roi_y:roi_y+roi_height, roi_x:roi_x+roi_width]
-                if roi is not None and roi.size > 0:
-                    cropped_images.append(roi)
-                else:
-                    log.append(f"Warning: Empty ROI for detection {idx}")
-            except Exception as e:
-                log.append(f"Warning: Failed to process detection {idx}: {str(e)}")
-                continue
-
-        if not cropped_images:
-            log.append("Warning: No valid cropped images found")
-
-        # Process each cropped image
-        for idx, cropped_image in enumerate(cropped_images, 1):
-            try:
-                # Convert cropped image to in-memory format if required by downstream functions
-                _, buffer = cv2.imencode('.jpg', cropped_image)
-                cropped_image_bytes = np.frombuffer(buffer, dtype=np.uint8)
+                # Convert tag image to in-memory format
+                _, tag_buffer = cv2.imencode('.jpg', tag_image)
+                tag_image_bytes = np.frombuffer(tag_buffer, dtype=np.uint8)
                 
-                # Pass in-memory image data to OCR or other processing functions
-                detected_texts, results = find_closest_matches(cropped_image_bytes)
+                # Convert cow image to in-memory format
+                _, cow_buffer = cv2.imencode('.jpg', cow_image)
+                cow_image_bytes = np.frombuffer(cow_buffer, dtype=np.uint8)
                 
-                logChildren = []
-
+                # Pass both tag and cow image data to processing function
+                detected_texts, results = find_closest_matches(tag_image_bytes, cow_image_bytes)
+                
                 for result in results:
                     if result['match_type'] == 'error':
-                        logChildren.append(f"Error processing cropped image {idx}: {result['message']}")
+                        log.append(f"Error processing tag-cow pair {idx}: {result['message']}")
                     elif result['match_type'] == 'warning':
-                        logChildren.append(f"Warning for cropped image {idx}: {result['message']}")
+                        log.append(f"Warning for tag-cow pair {idx}: {result['message']}")
                     elif result['match_type'] == 'full_tag':
-                        logChildren.append(f"Found full tag match: {result['matched_value']}")
+                        log.append(f"Found full tag match: {result['matched_value']}")
                     elif result['match_type'] == 'work_number':
-                        logChildren.append(f"Found work number match: {result['matched_value']}")
+                        log.append(f"Found work number match: {result['matched_value']}")
                     elif result['match_type'] == 'levenshtein':
                         matches_str = ', '.join(result['closest_matches'])
-                        logChildren.append(f"Found similar matches for '{result['original_text']}': {matches_str} (distance: {result['distance']})")
-                
-
-
+                        log.append(f"Found similar matches for '{result['original_text']}': {matches_str} (distance: {result['distance']})")
             except Exception as e:
-                log.append(f"Error processing cropped image {idx}: {str(e)}")
+                log.append(f"Error processing tag-cow pair {idx}: {str(e)}")
                 continue
-            finally:
-                log.append(logChildren)
-                break
 
         # Process hair color
         try:
@@ -411,13 +429,38 @@ async def upload_image(file: UploadFile = File(...)):
 
 class Item(BaseModel):
     value: str
+@app.post("/uploadVideoString/")
+async def upload_vidoeString(request: Request):
+    body = await request.body()  # Raw bytes
+    data = body.decode("utf-8")
+    video = data[58:]
+    video = video[:-3]
 
+    response = urllib.request.urlopen(video)
+    with open('video.mp4', 'wb') as f:
+        f.write(response.file.read())
+
+
+    vidObj = cv2.VideoCapture("video.mp4") 
+  
+    count = 0
+
+    success = 1
+    frames = []
+    while success: 
+        success, image = vidObj.read() 
+        frames.append(image)
+        count += 1
+
+    print("Done")
+    print(len(frames))
+    return {"message": "done", "labeled_image": "s"}
 @app.post("/uploadString/")
 async def upload_imageString(request: Request):
     body = await request.body()
     data = body.decode("utf-8")
     image = data[58:-3]  # Remove prefix and suffix
-
+    
     response = urllib.request.urlopen(image)
     with open('image2.jpg', 'wb') as f:
         f.write(response.file.read())
@@ -429,11 +472,7 @@ async def upload_imageString(request: Request):
         encoded_string = base64.b64encode(image_file.read())
 
     # Cleanup
-    for directory in ['labeled_images', 'cropped_images']:
-        files = glob.glob(f'{directory}/*')
-        for f in files:
-            os.remove(f)
-    os.remove("image2.jpg")
+ 
 
     return {"message": log, "labeled_image": encoded_string}
 

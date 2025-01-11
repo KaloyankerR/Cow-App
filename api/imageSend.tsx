@@ -1,7 +1,29 @@
 import axios, { AxiosResponse } from "axios";
 
-const BASE_URL = "http://192.168.2.17:8000";
-
+const BASE_URL = "http://25.74.168.237:8000";
+export const uploadVideoString = async (
+  value: string
+): Promise<AxiosResponse> => {
+  try {
+    const response = await axios.post(`${BASE_URL}/uploadVideoString/`, {
+      headers: { "Content-Type": "text/plain" },
+      data: {
+        value: value,
+      },
+    });
+    console.log("Here3");
+    // Check if the expected data is present
+    if (response.data) {
+      return response;
+    } else {
+      throw new Error("Unexpected server response structure.");
+    }
+  } catch (error: any) {
+    //console.log(imageUri);
+    console.error(error);
+    throw new Error("Failed to upload image. Please try again later.");
+  }
+};
 export const uploadImage = async (file: File): Promise<string> => {
   const formData2 = new FormData();
   formData2.append("file", file); // Compatibility workaround for TypeScript and FormData
