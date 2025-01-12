@@ -645,31 +645,7 @@ async def upload_image(file: UploadFile = File(...)):
 class Item(BaseModel):
     value: str
 
-@app.post("/uploadVideoString/")
-async def upload_vidoeString(request: Request):
-    body = await request.body()  # Raw bytes
-    data = body.decode("utf-8")
-    video = data[58:]
-    video = video[:-3]
 
-    response = urllib.request.urlopen(video)
-    with open('video.mp4', 'wb') as f:
-        f.write(response.file.read())
-
-
-    vidObj = cv2.VideoCapture("video.mp4") 
-  
-    count = 0
-
-    success = 1
-    frames = []
-    while success: 
-        success, image = vidObj.read() 
-        frames.append(image)
-        count += 1
-
-    print("Done")
-    return {"message": "done", "labeled_image": "s"}
 
 @app.post("/uploadString/")
 async def upload_imageString(request: Request):
@@ -742,7 +718,7 @@ async def upload_video_string(request: Request):
         
         # Get unique frames from the video
         unique_frames = get_unique_frames('video.mp4')
-        # print(f"Unique frames extracted: {len(unique_frames)}")
+        print(f"Unique frames extracted: {len(unique_frames)}")
         
         all_detections = []
 
