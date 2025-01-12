@@ -13,13 +13,14 @@ from PIL import Image, ExifTags
 import glob
 import pandas as pd
 import urllib
+import urllib.request
 from paddleocr import PaddleOCR
 from Levenshtein import distance as levenshtein_distance
 import re
 import datetime
 import json
+from typing import List, Dict, Tuple
 from fastapi.staticfiles import StaticFiles
-
 app = FastAPI()
 
 app.add_middleware(
@@ -29,11 +30,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
 app.mount("/images", StaticFiles(directory="saved_images"), name="images")
-
-
 # Roboflow setup
 rf2 = Roboflow(api_key="IxBbH3p5wJVfT83GdUsz")
 project2 = rf2.workspace().project("cow-hair-colors")
@@ -45,9 +42,88 @@ rf = Roboflow(api_key="s4CoCObGq01fLML1N0Ej")
 project = rf.workspace().project("cow-video-detection-l7zod")
 model = project.version(2).model
 ocr = PaddleOCR(use_angle_cls=True, lang='en',use_gpu = False)
-
-# Need to fix this! I'd like to use the excel sheet also to get some extra data such as birthdate, country etc!
 verification_df = None
+
+def track_and_process_video(video_path: str):
+    try:
+        # Initialize tracker - using modern OpenCV tracking API
+        tracker = cv2.TrackerKCF.create()  # or you can use cv2.TrackerCSRT.create()
+        tracking_active = False
+        current_bbox = None
+        
+        cap = cv2.VideoCapture(video_path)
+        all_detections = []  # Store all detection logs
+        all_labeled_frames = []  # Store all labeled frames
+        frame_count = 0
+    except Exception as e:
+                print(f"error in the Initialize tracker segment: {str(e)}")
+    
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+            
+        should_process = False
+        
+        if tracking_active:
+            success, bbox = tracker.update(frame)
+            if success:
+                # Check if tracked object moved significantly
+                if current_bbox is None or has_significant_movement(bbox, current_bbox):
+                    should_process = True
+                    current_bbox = bbox
+            else:
+                tracking_active = False
+                should_process = True
+        else:
+            should_process = True
+        
+        if should_process:
+            try:
+                # Save frame temporarily
+                temp_frame_path = f'temp_frame_{frame_count}.jpg'
+                cv2.imwrite(temp_frame_path, frame)
+                
+                # Process frame using existing scanImage
+                result = scanImage(temp_frame_path)
+                
+                if result["message"]:  # If detections were found
+                    # Store detection results
+                    all_detections.append({
+                        'frame_number': frame_count,
+                        'detections': result["message"]
+                    })
+                    
+                    # Store labeled frame
+                    all_labeled_frames.append({
+                        'frame_number': frame_count,
+                        'labeled_image': result["labeled_image"]
+                    })
+                    
+                    # Initialize tracking if not active
+                    if not tracking_active:
+                        # Assuming your process_image_with_cows_and_tags returns bounding boxes
+                        cows, _ = process_image_with_cows_and_tags(temp_frame_path)
+                        if cows:
+                            tracker = cv2.TrackerKCF.create()  # Create new tracker instance
+                            tracker.init(frame, cows[0])
+                            tracking_active = True
+                            current_bbox = cows[0]
+                
+            except Exception as e:
+                print(f"Error processing frame {frame_count}: {str(e)}")
+                
+        frame_count += 1
+    
+    cap.release()
+    return all_detections, all_labeled_frames
+
+def has_significant_movement(bbox1, bbox2, threshold=30):
+    """Check if there's significant movement between two bounding boxes"""
+    center1 = (bbox1[0] + bbox1[2]/2, bbox1[1] + bbox1[3]/2)
+    center2 = (bbox2[0] + bbox2[2]/2, bbox2[1] + bbox2[3]/2)
+    distance = np.sqrt((center1[0] - center2[0])**2 + (center1[1] - center2[1])**2)
+    return distance > threshold
 
 def resize_image(input_path,output_path ,max_width, max_height):
     with Image.open(input_path) as img:
@@ -70,7 +146,7 @@ def resize_image(input_path,output_path ,max_width, max_height):
 
         # Get corrected dimensions
         width, height = img.size
-        print(f"Corrected Width: {width}, Corrected Height: {height}")
+    
 
         # Determine the orientation and appropriate scaling factor
         if width > height:  # Landscape orientation
@@ -83,7 +159,6 @@ def resize_image(input_path,output_path ,max_width, max_height):
         # Calculate new dimensions while preserving aspect ratio
         new_width = int(width * scaling_factor)
         new_height = int(height * scaling_factor)
-        print(f"New Width: {new_width}, New Height: {new_height}")
 
         # Resize the image
         img = img.resize((new_width, new_height), Image.LANCZOS)
@@ -152,7 +227,6 @@ def preprocess_image(img):
     return dilated_img
 
 def extract_text_from_image(processed_img):
-    print("Started Text Extraction process from image")
     results = ocr.ocr(processed_img, cls=False)
     
     detected_texts = []
@@ -162,7 +236,7 @@ def extract_text_from_image(processed_img):
             clean_text = text.replace(" ", "")
             if clean_text:
                 detected_texts.append(clean_text)
-    print("finished")
+
     return detected_texts, confidence
 
 def find_closest_matches(img_bytes, cow_bytes, levenshtein_threshold=2, excel_path="Data/CowInfo.xlsx"):
@@ -283,11 +357,11 @@ def process_image_with_cows_and_tags(image_name):
             return "Error: Input image not found"
         # Detect objects (cows and tags)
         prediction_result = model.predict(image_name, confidence=50, overlap=30)
-
+        
         all_cords = prediction_result.json()
 
         prediction_result.save(f"labeled_images/prediction.jpg")
-
+        
         # Read the input image
         image = cv2.imread(image_name)
         if image is None:
@@ -360,6 +434,8 @@ def process_image_with_cows_and_tags(image_name):
 
     except Exception as e:
         return f"Error: {str(e)}"
+
+
 def scanImage(image_name):
     log = []
 
@@ -373,7 +449,6 @@ def scanImage(image_name):
         output_path = 'resized_img.jpg'
         image_name = resize_image(image_name,output_path, max_width, max_height)
         cows, cropped_and_cows = process_image_with_cows_and_tags(image_name)
-        print("finished images")
         # Process each matched pair (tag_image, cow_image)
         for idx, (tag_image, cow_image) in enumerate(cropped_and_cows, 1):
             try:
@@ -613,4 +688,91 @@ async def upload_imageString(request: Request):
     with open("labeled_images/prediction.jpg", "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read())
 
+    # Cleanup
+ 
+
     return {"cow_data": log, "labeled_image": encoded_string}
+
+def get_unique_frames(video_path: str, threshold=45):
+    cap = cv2.VideoCapture(video_path)
+    unique_frames = []
+    prev_frame = None
+    frame_count = 0
+    
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+            
+        # Convert to grayscale for faster processing
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        
+        if prev_frame is None:
+            # Always process first frame
+            unique_frames.append((frame_count, frame))
+            prev_frame = gray
+        else:
+            # Calculate difference between current and previous frame
+            diff = cv2.absdiff(prev_frame, gray)
+            mean_diff = np.mean(diff)
+            
+            # If significant change detected
+            if mean_diff > threshold:
+                unique_frames.append((frame_count, frame))
+                prev_frame = gray
+        
+        frame_count += 1
+    
+    cap.release()
+    return unique_frames
+
+    
+
+@app.post("/uploadVideoString/")
+async def upload_video_string(request: Request):
+    try:
+        print("Start processing video")
+        body = await request.body()
+        data = body.decode("utf-8")
+        video_url = data[58:-3]  # Extract the video URL
+        
+        # Download and save the video
+        response = urllib.request.urlopen(video_url)
+        with open('video.mp4', 'wb') as f:
+            f.write(response.file.read())
+        
+        # Get unique frames from the video
+        unique_frames = get_unique_frames('video.mp4')
+        print(f"Unique frames extracted: {len(unique_frames)}")
+        
+        all_detections = []
+
+        # Process each unique frame
+        for frame_number, frame in unique_frames:
+            temp_frame_path = f'detected_frame_{frame_number}.jpg'
+            cv2.imwrite(temp_frame_path, frame)  # Save frame
+            
+            try:
+                # Process the frame with scanImage
+                result_json = scanImage(temp_frame_path)
+                
+                # Include only frames with valid detections
+                if result_json:
+                    all_detections.append({
+                        'detectedFrame': temp_frame_path,
+                        'Detections': result_json
+                    })
+                else:
+                    print(f"Frame {frame_number}: No valid detections")  # Debugging
+            
+            except Exception as e:
+                
+                continue
+
+        # Return JSON response with detections and frame path
+        
+        return {"framesWithDetections": all_detections}
+    
+    except Exception as e:
+        
+        return {"error": str(e)}

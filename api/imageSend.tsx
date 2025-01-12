@@ -11,7 +11,6 @@ export const uploadVideoString = async (
         value: value,
       },
     });
-    console.log("Here3");
     // Check if the expected data is present
     if (response.data) {
       return response;

@@ -45,10 +45,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     borderColor: "#D2B48C",
     borderWidth: 2,
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 2, height: 2 },
-    elevation: 5,
+    elevation: 5, // Works for Android shadows
     marginBottom: 20,
   },
   // 18/12/2024 - Added by me Shelson, just to center the button's
@@ -74,10 +71,7 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: "#8B4513",
     backgroundColor: "#FAEBD7",
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 1, height: 1 },
-    elevation: 5,
+    elevation: 5, // Add shadow for Android
   },
   imageText: {
     marginTop: 15,

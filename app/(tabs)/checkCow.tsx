@@ -1,35 +1,52 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-} from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import styles from "../styles/HomeScreen.styles";
 import CowDetailCard from "../../components/CowDetailCard";
+import cowDataJson from "../../cow_data.json";
 
 export default function CheckCow() {
   const [cowTag, setCowTag] = useState("");
   const [cowDetails, setCowDetails] = useState(null);
+  const [cowData, setCowData] = useState({});
 
-  const mockCowData = {
-    "12345": [
-      { breed: "Holstein", country: "Netherlands", age: "5 years" },
-      { breed: "Jersey", country: "Netherlands", age: "2 years" },
-    ],
-    "67890": [
-      { breed: "Jersey", country: "USA", age: "3 years" },
-      { breed: "Angus", country: "Canada", age: "4 years" },
-    ],
-    "54321": [
-      { breed: "Charolais", country: "France", age: "6 years" },
-    ],
-  };
+  // const getImagePath = (tag) => {
+  //   try {
+  //     return require(`../../assets/saved_images/${tag}.jpg`);
+  //   } catch (error) {
+  //     return require(`../../assets/saved_images/default.jpg`);
+  //   }
+  // };
+
+  useEffect(() => {
+    const loadCowData = async () => {
+      try {
+        const organizedData = cowDataJson.reduce((acc, cow) => {
+          const tag = cow["Veld02_V"];
+          if (!acc[tag]) acc[tag] = [];
+          acc[tag].push({
+            tag: cow["Veld02_V"],
+            breed: cow["Veld12_V"],
+            country: cow["Veld07_V"],
+            age: `${cow["Veld05_V"]} years`,
+            feedType: cow["Veld09_V"],
+            height: cow["Veld06_V"],
+            weight: cow["Veld11_V"],
+            lastVaccination: cow["Veld14_V"],
+            imagePath: tag+".jpg",
+          });
+          return acc;
+        }, {});
+        setCowData(organizedData);
+      } catch (error) {
+        console.error("Error loading cow data:", error);
+      }
+    };
+
+    loadCowData();
+  }, []);
 
   const handleSearch = () => {
-    const details = mockCowData[cowTag];
+    const details = cowData[cowTag];
     if (details) {
       setCowDetails(details);
     } else {
@@ -41,9 +58,7 @@ export default function CheckCow() {
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <Text style={styles.header}>Manual Cow Search</Text>
-        <Text style={styles.subheader}>
-          Enter a cow tag to retrieve details
-        </Text>
+        <Text style={styles.subheader}>Enter a cow tag to retrieve details</Text>
       </View>
 
       <View style={loc_styles.inputContainer}>

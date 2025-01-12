@@ -1,31 +1,115 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, TextInput, Alert } from "react-native";
-import styles from "../app/styles/CowDetailCard.styles";
+import { View, Text, Image, TouchableOpacity, Modal, Button, StyleSheet } from "react-native";
 
-export default function CowDetailCard({ cow, clicked}) {
-  const [isReporting, setIsReporting] = useState(false);
-  const [reportText, setReportText] = useState("");
-  const [cardBorderColor, setCardBorderColor] = useState("#ccc");
+const SERVER_URL = "http://25.74.168.237:8000"; // Replace with your FastAPI server's URL
 
-  // const handleReportSubmit = () => {
-  //   Alert.alert("Mismatch Reported", `Thank you for your feedback: ${reportText}`);
-  //   setIsReporting(false);
-  //   setReportText("");
-  //   setCardBorderColor("#D32F2F");
-  // };
+export default function CowDetailCard({ cow }) {
+  const [modalVisible, setModalVisible] = useState(false);
 
-  // const handleConfirm = () => {
-  //   Alert.alert("Confirmed", `Thank you for confirming this cow's information!`);
-  //   setCardBorderColor("#388E3C");
-  // };
+  const handleDetailsPress = () => {
+    setModalVisible(true);
+    console.log("Details button pressed");
+    console.log(cow.imagePath);
+  };
+    const getImageUri = (path: string) => `${SERVER_URL}/images/${path}`;
 
   return (
-    <TouchableOpacity  onPress={clicked}>
-      <View style={[styles.card, { borderColor: cardBorderColor, borderWidth: 3 }]} >
-        <Text style={styles.detail}>🏷️ Tag: {cow.Tag}</Text>
-        <Text style={styles.detail}>🌍 Country: {cow.Country}</Text>
-        {/* <Text style={styles.detail}>🐄 Breed: {cow.breed}</Text> */}
-      </View>
-    </TouchableOpacity>
+    <>
+      <TouchableOpacity onPress={handleDetailsPress} style={styles.cardContainer}>
+        {/* Cow Image */}
+        <Image
+          source={{ uri: getImageUri(cow.imagePath) }}
+          style={styles.image}
+          resizeMode="cover"
+          onError={(e) => console.log("Image loading error:", e.nativeEvent.error)}
+        />
+
+        {/* Cow Details */}
+        <View style={styles.textContainer}>
+          <Text style={styles.title}>🐮 {cow.tag || "Unknown Tag"}</Text>
+          <Text style={styles.detail}>📅 Age: {cow.age || "N/A"}</Text>
+          <Text style={styles.detail}>🌍 Country: {cow.country || "N/A"}</Text>
+          <Text style={styles.detail}>🐄 Breed: {cow.breed || "N/A"}</Text>
+        </View>
+      </TouchableOpacity>
+
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Cow Details</Text>
+            <Image
+              source={{ uri: getImageUri(cow.imagePath) }}
+              style={styles.image}
+              resizeMode="cover"
+              onError={(e) => console.log("Modal Image loading error:", e.nativeEvent.error)}
+            />
+            <Text style={styles.modalText}>🐮 Tag: {cow.tag || "Unknown Tag"}</Text>
+            <Text style={styles.modalText}>📅 Age: {cow.age || "N/A"}</Text>
+            <Text style={styles.modalText}>🌍 Country: {cow.country || "N/A"}</Text>
+            <Text style={styles.modalText}>🐄 Breed: {cow.breed || "N/A"}</Text>
+            <Button title="Close" onPress={() => setModalVisible(false)} color="#28a745" />
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 }
+
+const styles = StyleSheet.create({
+  cardContainer: {
+    margin: 10,
+    borderRadius: 10,
+    overflow: "hidden",
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  image: {
+    width: "100%",
+    height: 200,
+  },
+  textContainer: {
+    padding: 10,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  detail: {
+    fontSize: 16,
+    color: "#555",
+    marginVertical: 2,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    width: "90%",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 20,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 15,
+  },
+  modalText: {
+    fontSize: 16,
+    color: "#555",
+    marginVertical: 5,
+  },
+});
