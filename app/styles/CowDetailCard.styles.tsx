@@ -13,9 +13,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 2,
+    width: "15vw",
+    height: "12vh",
+    justifyContent: "center",
   },
   detail: {
-    fontSize: 16,
+    fontSize: 18,
     marginBottom: 8,
     color: "#333",
   },

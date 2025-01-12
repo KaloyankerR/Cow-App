@@ -14,6 +14,8 @@ import ImagePickerReact from "react-native-image-picker";
 import styles from "../styles/HomeScreen.styles";
 import { ScrollView } from "react-native-gesture-handler";
 import * as FileSystem from 'expo-file-system';
+import Popup from '@/components/Popup_CowInfo/CowPU';
+import CowDetailCard from "@/components/CowDetailCard";
 
 export default function HomeScreen() {
 
@@ -37,6 +39,7 @@ export default function HomeScreen() {
   }
 
   const pickImage = async () => {
+
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     let response;
     // No permissions request is necessary for launching the image library
@@ -46,6 +49,8 @@ export default function HomeScreen() {
     });
 
     if (!result.canceled) {
+      setCowDetails([])
+
       setText(
         "🐮 Moo-tastic! Image Uploaded! Detecting breed and tag information..."
       );
@@ -75,7 +80,9 @@ export default function HomeScreen() {
       }
 
       setImage("data:image/jpeg;base64," + response.data.labeled_image);
+      setCowDetails(response.data.cow_data)
       setText(response.data.message);
+      console.log(response.data)
     }
   };
 
@@ -83,7 +90,6 @@ export default function HomeScreen() {
     <View style={styles.container}>
 
       <View style={styles.headerContainer}>
-
         <Text style={styles.header}>Cow Identifier for</Text>
         <Text style={styles.header}>DAP Thewi</Text>
         <Text style={styles.subheader}>Upload an image to identify your cow by tag and color breed</Text>
@@ -95,11 +101,11 @@ export default function HomeScreen() {
         <Popup visible={isPopUpVis} onClose={togglePopup} cowData={cowDataPU}/>
 
 
-        {image && <Image source={{ uri: image }} style={styles.image} />}
+        {image && <Image source={{ uri: image }} style={styles.image} resizeMode="contain"/>}
 
         {cowDetails.length > 0 && (
           <View style={styles.detailsContainer}>
-            <Text style={styles.detailsTitle}>Detected Cows:</Text>
+            {/* <Text style={styles.detailsTitle}>Detected Cows:</Text> */}
             <View style={styles.detectedCowsContainer}>
               {cowDetails.map((cow, index) => (
                 <CowDetailCard key={index} cow={cow} clicked={() => passInformationToPopUp(cow)}/>

@@ -5,17 +5,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FAF3E3",
   },
+  
   headerContainer: {
     padding: 20,
-    marginTop: 40,
-    backgroundColor: "#ffffff",
-    alignItems: "center",
-    borderBottomWidth: 1,
-    borderBottomColor: "#ffffff",
-  },
-  headerContainer: {
-    padding: 20,
-    marginTop: 40,
     backgroundColor: "#FAF3E3",
     alignItems: "center",
     borderBottomWidth: 1,
@@ -41,7 +33,10 @@ const styles = StyleSheet.create({
   },
   detectedCowsContainer: {
     flex: 1,
-    flexDirection: "row"
+    flexDirection: "row",
+    flexWrap: 'wrap',
+    gap: 14,
+    marginTop: "2%"
   },
   uploadButton: {
     backgroundColor: "#8B5E3C",
@@ -61,7 +56,7 @@ const styles = StyleSheet.create({
     flex:1,
     flexDirection: "row",
     alignItems: "center",
-    marginTop:"5%"
+    marginTop:"1%"
   },
   
   buttonText: {
@@ -71,7 +66,9 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "50vw",
-    height: "45vh",
+    maxWidth: "50vw",
+    height: "55vh",
+    maxHeight: "55vh",
     borderRadius: 20,
     marginTop: 20,
     borderWidth: 3,
@@ -90,6 +87,9 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     textAlign: "center",
   },
+  detailsTitle: {
+    fontSize: 20
+  }
 });
 
 export default styles;

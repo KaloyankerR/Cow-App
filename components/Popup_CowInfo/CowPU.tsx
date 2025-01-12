@@ -147,13 +147,13 @@ const Popup = ({visible, onClose, cowData, imgURL}) => {
 
                     <View style={isMobile ? styles.cowDataContainerMobile : styles.cowDataContainer}>
                         
-                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Work Number: {cowData.tag}</Text>
+                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Work Number: {cowData.Tag}</Text>
                         {/* <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>ID Number: {cowData}</Text> */}
                         {/* <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Full Number: BE429940016 {console.log(cowData)}</Text> */}
                         <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Country: {cowData.country}</Text>
-                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Age: {cowData.age} Birthdate: 15-06-2024</Text>
+                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Age: {cowData.age}</Text>
                         {/* <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Company: Kupersvee B.V</Text> */}
-                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Color: Zwart-wit</Text>
+                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Color: {cowData.Color}</Text>
                     </View>
 
                     

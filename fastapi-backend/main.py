@@ -39,6 +39,8 @@ project = rf.workspace().project("cow-video-detection-l7zod")
 model = project.version(2).model
 ocr = PaddleOCR(use_angle_cls=True, lang='en',use_gpu = False)
 
+# Need to fix this! I'd like to use the excel sheet also to get some extra data such as birthdate, country etc!
+verification_df = None
 
 def resize_image(input_path,output_path ,max_width, max_height):
     with Image.open(input_path) as img:
@@ -143,7 +145,7 @@ def preprocess_image(img):
     return dilated_img
 
 def extract_text_from_image(processed_img):
-    print("started")
+    print("Started Text Extraction process from image")
     results = ocr.ocr(processed_img, cls=False)
     
     detected_texts = []
@@ -354,7 +356,11 @@ def process_image_with_cows_and_tags(image_name):
         return f"Error: {str(e)}"
 def scanImage(image_name):
     log = []
-    print("Started")
+
+    cowData = []
+
+    print("Starting scan process")
+
     try:
         max_width = 1536
         max_height = 1536
@@ -375,41 +381,89 @@ def scanImage(image_name):
                 
                 # Pass both tag and cow image data to processing function
                 detected_texts, results = find_closest_matches(tag_image_bytes, cow_image_bytes)
-                
                 for result in results:
+                    foundCow = {}
+                    
+
                     if result['match_type'] == 'error':
                         log.append(f"Error processing tag-cow pair {idx}: {result['message']}")
                     elif result['match_type'] == 'warning':
                         log.append(f"Warning for tag-cow pair {idx}: {result['message']}")
                     elif result['match_type'] == 'full_tag':
+                        foundCow["Tag"] = result['matched_value']
                         log.append(f"Found full tag match: {result['matched_value']}")
                     elif result['match_type'] == 'work_number':
+                        foundCow["Tag"] = result['matched_value']
                         log.append(f"Found work number match: {result['matched_value']}")
+                        
                     elif result['match_type'] == 'levenshtein':
                         matches_str = ', '.join(result['closest_matches'])
+                        foundCow["Tag"] = matches_str
                         log.append(f"Found similar matches for '{result['original_text']}': {matches_str} (distance: {result['distance']})")
+
+                    tag = foundCow.get('Tag')
+                    cowImg= f'./saved_images/{tag}.jpg' 
+                    hair_detection(image_name=cowImg, foundCow=foundCow)
+                if tag != None:
+                    cowData.append(foundCow)
+
             except Exception as e:
                 log.append(f"Error processing tag-cow pair {idx}: {str(e)}")
+
                 continue
 
-        # Process hair color
-        try:
-            result = model_hair.predict(image_name, confidence=50, overlap=30).json()
-            if result["predictions"]:
-                for prediction in result["predictions"]:
-                    label = prediction['class']
-                    confidence = prediction['confidence']
-                    log.append(f"Detected Hair Color: {label} with Confidence: {confidence:.2f}")
-            else:
-                log.append("No hair color detected")
-        except Exception as e:
-            log.append(f"Error in hair color detection: {str(e)}")
+        
 
     except Exception as e:
         log.append(f"Critical error in image processing: {str(e)}")
 
     print("\n".join(log))
-    return "\n".join(log)
+    print(cowData)
+
+    return cowData
+
+def hair_detection(image_name, foundCow):
+    # Should change this so it gets a part of the cow. Not the whole image just a specific cow.
+    # Process hair color
+        cowTag = foundCow.get('Tag')
+        
+        print(f'Received Tag: {cowTag}')
+        print(image_name)
+
+        if cowTag == None:
+            print("Ignoring non detected tag")
+            return
+        else: 
+            try:
+                result = model_hair.predict(image_name, confidence=50, overlap=30).json()
+                if result["predictions"]:
+                    label = ""
+                    confidence = 0
+
+                    for prediction in result["predictions"]:
+                        label = prediction['class']
+                        confidence = prediction['confidence']
+                        # print(f'Color detected: {label} - Confidence: {confidence}')
+                        #log.append(f"Detected Hair Color: {label} with Confidence: {confidence:.2f}")         
+                        
+                    foundCow["Color"] = label #
+                    #d_color[highest_confIndx]
+                    foundCow["Color_Confidence"] =  confidence 
+                    foundCow["IMG_URL"] = image_name
+                    print(verification_df)
+                    print(foundCow)
+                    #max(d_confidence)
+                else:
+                    print("\n\n\nNo hair color detected")                                    
+                    foundCow["Color"] = "N/A"
+                    foundCow["Color_Confidence"] = 0
+                    foundCow["IMG_URL"] = ""
+    	
+            except Exception as e:
+                print(f'Error in hair detection: {str(e)}')
+                foundCow["Color"] = "N/A"
+                foundCow["Color_Confidence"] = 0
+                foundCow["IMG_URL"] = ""
 
 
 # FastAPI endpoints
@@ -429,6 +483,7 @@ async def upload_image(file: UploadFile = File(...)):
 
 class Item(BaseModel):
     value: str
+
 @app.post("/uploadVideoString/")
 async def upload_vidoeString(request: Request):
     body = await request.body()  # Raw bytes
@@ -455,6 +510,7 @@ async def upload_vidoeString(request: Request):
     print("Done")
     print(len(frames))
     return {"message": "done", "labeled_image": "s"}
+
 @app.post("/uploadString/")
 async def upload_imageString(request: Request):
     body = await request.body()
@@ -474,5 +530,5 @@ async def upload_imageString(request: Request):
     # Cleanup
  
 
-    return {"message": log, "labeled_image": encoded_string}
+    return {"cow_data": log, "labeled_image": encoded_string}
 
