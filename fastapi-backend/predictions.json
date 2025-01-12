@@ -1,32 +1,7 @@
 {
-    "predictions": [
-        {
-            "x": 1688,
-            "y": 777,
-            "width": 156,
-            "height": 168,
-            "confidence": 0.930965781211853,
-            "class": "0",
-            "class_id": 0,
-            "detection_id": "cb05aac8-7ef4-4d87-a5ec-9adc009c773b",
-            "image_path": "resized_img.jpg",
-            "prediction_type": "ObjectDetectionModel"
-        },
-        {
-            "x": 1382,
-            "y": 808,
-            "width": 1043,
-            "height": 1305,
-            "confidence": 0.8764443397521973,
-            "class": "cow",
-            "class_id": 1,
-            "detection_id": "6d476c3f-fb85-4dd4-852c-ecb81c24b660",
-            "image_path": "resized_img.jpg",
-            "prediction_type": "ObjectDetectionModel"
-        }
-    ],
+    "predictions": [],
     "image": {
         "width": "2048",
-        "height": "1536"
+        "height": "1152"
     }
 }

@@ -1,0 +1,24 @@
+[
+    {
+        "detectedFrame": "detected_frame_26.jpg",
+        "Detections": [
+            {
+                "Tag": "0422",
+                "Color": "roodbont",
+                "Color_Confidence": 0.5860702991485596,
+                "IMG_URL": "./saved_images/0422.jpg"
+            }
+        ]
+    },
+    {
+        "detectedFrame": "detected_frame_57.jpg",
+        "Detections": [
+            {
+                "Tag": "04225",
+                "Color": "N/A",
+                "Color_Confidence": 0,
+                "IMG_URL": ""
+            }
+        ]
+    }
+]

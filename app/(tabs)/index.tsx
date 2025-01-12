@@ -48,41 +48,45 @@ export default function HomeScreen() {
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     let response;
-    // No permissions request is necessary for launching the image library
+  
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images", "videos"], // Choose only images
+      mediaTypes: ["images", "videos"],
       base64: true,
     });
-
+  
     if (!result.canceled) {
-      setText(
-        "🐮 Moo-tastic! Image Uploaded! Detecting breed and tag information..."
-      );
+      setText("🐮 Moo-tastic! Image Uploaded! Detecting breed and tag information...");
       setImage("data:image/jpeg;base64," + result.assets[0].base64);
-
-      if (result.assets[0].type == "image") {
+  
+      if (result.assets[0].type === "image") {
         response = await uploadImageString(
           "data:image/jpeg;base64," + result.assets[0].base64
         );
       } else {
-        if (
-          !result.assets[0].uri ||
-          !result.assets[0].fileName ||
-          !result.assets[0].type
-        ) {
-          throw new Error("Invalid video file. Missing required properties.");
+        let base64;
+        
+        if (Platform.OS === 'web') {
+          // Web handling
+          const response = await fetch(result.assets[0].uri);
+          const blob = await response.blob();
+          base64 = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result.split(',')[1]);
+            reader.readAsDataURL(blob);
+          });
+        } else {
+          // Mobile handling
+          base64 = await FileSystem.readAsStringAsync(
+            result.assets[0].uri,
+            {
+              encoding: "base64",
+            }
+          );
         }
-
-        const base64 = await FileSystem.readAsStringAsync(
-          result.assets[0].uri,
-          {
-            encoding: "base64",
-          }
-        );
-
+  
         response = await uploadVideoString("data:video/mp4;base64," + base64);
       }
-
+  
       setImage("data:image/jpeg;base64," + response.data.labeled_image);
       setText(response.data.message);
     }

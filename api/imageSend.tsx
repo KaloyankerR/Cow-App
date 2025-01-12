@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 
-const BASE_URL = "http://25.74.168.237:8000";
+const BASE_URL = "http://192.168.143.40:8000";
 export const uploadVideoString = async (
   value: string
 ): Promise<AxiosResponse> => {
@@ -11,7 +11,6 @@ export const uploadVideoString = async (
         value: value,
       },
     });
-    console.log("Here3");
     // Check if the expected data is present
     if (response.data) {
       return response;
