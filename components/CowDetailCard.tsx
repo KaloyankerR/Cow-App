@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, Image, TouchableOpacity, Modal, Button, StyleSheet } from "react-native";
 
-const SERVER_URL = "http://25.74.168.237:8000"; // Replace with your FastAPI server's URL
+const SERVER_URL = "http://192.168.2.17:8000"; // Replace with your FastAPI server's URL
 
 export default function CowDetailCard({ cow }) {
   const [modalVisible, setModalVisible] = useState(false);

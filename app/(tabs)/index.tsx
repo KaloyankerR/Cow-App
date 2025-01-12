@@ -16,7 +16,7 @@ import styles from "../styles/HomeScreen.styles";
 import { ScrollView } from "react-native-gesture-handler";
 import * as FileSystem from 'expo-file-system';
 import Popup from '@/components/Popup_CowInfo/CowPU';
-import CowDetailCard from "@/components/CowDetailCard";
+import CowDetailCardScan from "@/components/CowDetailCard_Scan";
 
 export default function HomeScreen() {
 
@@ -114,7 +114,7 @@ export default function HomeScreen() {
             {/* <Text style={styles.detailsTitle}>Detected Cows:</Text> */}
             <View style={styles.detectedCowsContainer}>
               {cowDetails.map((cow, index) => (
-                <CowDetailCard key={index} cow={cow} clicked={() => passInformationToPopUp(cow)}/>
+                <CowDetailCardScan key={index} cow={cow} clicked={() => passInformationToPopUp(cow)}/>
               ))}
             </View>
             
