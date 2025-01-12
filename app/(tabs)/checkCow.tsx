@@ -32,7 +32,7 @@ export default function CheckCow() {
             height: cow["Veld06_V"],
             weight: cow["Veld11_V"],
             lastVaccination: cow["Veld14_V"],
-            imagePath: cow["imagePath"],
+            imagePath: tag+".jpg",
           });
           return acc;
         }, {});

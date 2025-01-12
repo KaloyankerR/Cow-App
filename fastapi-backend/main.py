@@ -18,7 +18,7 @@ from Levenshtein import distance as levenshtein_distance
 import re
 import json
 from typing import List, Dict, Tuple
-
+from fastapi.staticfiles import StaticFiles
 app = FastAPI()
 
 app.add_middleware(
@@ -28,7 +28,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+app.mount("/images", StaticFiles(directory="saved_images"), name="images")
 # Roboflow setup
 rf2 = Roboflow(api_key="IxBbH3p5wJVfT83GdUsz")
 project2 = rf2.workspace().project("cow-hair-colors")

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { View, Text, Image, TouchableOpacity, Modal, Button, StyleSheet } from "react-native";
 
+const SERVER_URL = "http://25.74.168.237:8000"; // Replace with your FastAPI server's URL
+
 export default function CowDetailCard({ cow }) {
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -9,23 +11,14 @@ export default function CowDetailCard({ cow }) {
     console.log("Details button pressed");
     console.log(cow.imagePath);
   };
-
-  const getImageSource = (imagePath) => {
-    try {
-      return require(`./assets/saved_images/${imagePath}`);
-    } catch (error) {
-      console.warn("Image not found:", imagePath);
-      return require("./assets/saved_images/default.jpg"); // Fallback image
-    }
-  };
-  
+    const getImageUri = (path: string) => `${SERVER_URL}/images/${path}`;
 
   return (
     <>
       <TouchableOpacity onPress={handleDetailsPress} style={styles.cardContainer}>
         {/* Cow Image */}
         <Image
-          source={{ uri: cow.imagePath }}
+          source={{ uri: getImageUri(cow.imagePath) }}
           style={styles.image}
           resizeMode="cover"
           onError={(e) => console.log("Image loading error:", e.nativeEvent.error)}
@@ -49,14 +42,12 @@ export default function CowDetailCard({ cow }) {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Cow Details</Text>
-            {/* <Image
-              source={{ uri: cow.imagePath }}
+            <Image
+              source={{ uri: getImageUri(cow.imagePath) }}
               style={styles.image}
               resizeMode="cover"
-              onError={(e) => console.log("Image loading error:", e.nativeEvent.error)}
-            /> */}
-            <Image source={eval(cow.imagePath)} style={styles.image} resizeMode="cover" />
-            
+              onError={(e) => console.log("Modal Image loading error:", e.nativeEvent.error)}
+            />
             <Text style={styles.modalText}>🐮 Tag: {cow.tag || "Unknown Tag"}</Text>
             <Text style={styles.modalText}>📅 Age: {cow.age || "N/A"}</Text>
             <Text style={styles.modalText}>🌍 Country: {cow.country || "N/A"}</Text>
@@ -114,11 +105,6 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 15,
-  },
-  modalImage: {
-    width: "100%",
-    height: 250,
     marginBottom: 15,
   },
   modalText: {

@@ -3,7 +3,7 @@ import json
 import os
 
 file_path = 'CowInfo.xlsx'
-image_directory = 'assets/saved_images'
+image_directory = '/fastapi-backend/saved_images'
 output_json_path = 'cow_data.json'
 
 cow_data = pd.ExcelFile(file_path)
