@@ -669,7 +669,6 @@ async def upload_vidoeString(request: Request):
         count += 1
 
     print("Done")
-    print(len(frames))
     return {"message": "done", "labeled_image": "s"}
 
 @app.post("/uploadString/")
@@ -743,7 +742,7 @@ async def upload_video_string(request: Request):
         
         # Get unique frames from the video
         unique_frames = get_unique_frames('video.mp4')
-        print(f"Unique frames extracted: {len(unique_frames)}")
+        # print(f"Unique frames extracted: {len(unique_frames)}")
         
         all_detections = []
 

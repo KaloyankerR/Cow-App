@@ -39,31 +39,81 @@ export default function HomeScreen() {
     togglePopup();
   }
 
-  const pickImage = async () => {
+  // OLD 
+  
+  // const pickImage = async () => {
 
+  //   const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  //   let response;
+  
+  //   let result = await ImagePicker.launchImageLibraryAsync({
+  //     mediaTypes: ["images", "videos"],
+  //     base64: true,
+  //   });
+  
+  //   if (!result.canceled) {
+  //     setCowDetails([])
+
+  //     setText(
+  //       "🐮 Moo-tastic! Image Uploaded! Detecting breed and tag information..."
+  //     );
+  //     setImage("data:image/jpeg;base64," + result.assets[0].base64);
+  
+  //     if (result.assets[0].type === "image") {
+  //       response = await uploadImageString(
+  //         "data:image/jpeg;base64," + result.assets[0].base64
+  //       );
+  //     } else {
+  //       let base64;
+        
+  //       if (Platform.OS === 'web') {
+  //         // Web handling
+  //         const response = await fetch(result.assets[0].uri);
+  //         const blob = await response.blob();
+  //         base64 = await new Promise((resolve) => {
+  //           const reader = new FileReader();
+  //           reader.onloadend = () => resolve(reader.result.split(',')[1]);
+  //           reader.readAsDataURL(blob);
+  //         });
+  //       } else {
+  //         // Mobile handling
+  //         base64 = await FileSystem.readAsStringAsync(
+  //           result.assets[0].uri,
+  //           {
+  //             encoding: "base64",
+  //           }
+  //         );
+  //       }
+  
+  //       response = await uploadVideoString("data:video/mp4;base64," + base64);
+  //     }
+  
+  //     setImage("data:image/jpeg;base64," + response.data.labeled_image);
+  //     setCowDetails(response.data.cow_data)
+  //     setText(response.data.message);
+  //   }
+  // };
+
+  const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     let response;
-  
+
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images", "videos"],
       base64: true,
     });
-  
-    if (!result.canceled) {
-      setCowDetails([])
 
-      setText(
-        "🐮 Moo-tastic! Image Uploaded! Detecting breed and tag information..."
-      );
+    if (!result.canceled) {
+      setText("🐮 Moo-tastic! Image Uploaded! Detecting breed and tag information...");
       setImage("data:image/jpeg;base64," + result.assets[0].base64);
-  
+
       if (result.assets[0].type === "image") {
         response = await uploadImageString(
           "data:image/jpeg;base64," + result.assets[0].base64
         );
       } else {
         let base64;
-        
+
         if (Platform.OS === 'web') {
           // Web handling
           const response = await fetch(result.assets[0].uri);
@@ -82,15 +132,17 @@ export default function HomeScreen() {
             }
           );
         }
-  
+
         response = await uploadVideoString("data:video/mp4;base64," + base64);
       }
-  
+
       setImage("data:image/jpeg;base64," + response.data.labeled_image);
       setCowDetails(response.data.cow_data)
+
       setText(response.data.message);
     }
   };
+
 
   return (
     <View style={styles.container}>
