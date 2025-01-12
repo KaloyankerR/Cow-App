@@ -3,11 +3,14 @@
 // - Displays information such as: Birthdate, gender, origin etc.
 // - (Could) Open/Close animation
 
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Modal, View, Text, StyleSheet, TouchableOpacity, Dimensions, Image} from 'react-native';
+import { Asset } from 'expo-asset';
 
 const screenWidth = Dimensions.get('window').width;
 const isMobile = screenWidth < 768;
+
+const SERVER_URL = "http://192.168.2.17:8000";
 
 
 
@@ -126,6 +129,27 @@ const styles = StyleSheet.create({
 
 
 const Popup = ({visible, onClose, cowData, imgURL}) => {
+
+    const getImageUri = (cowData: object) => {
+
+
+
+        if(cowData.IMG_URL == "")
+        {
+            return "https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png";
+        }
+        else {
+            return `${SERVER_URL}/images/${cowData.Tag}.jpg`;
+        }
+    }
+
+
+
+
+    let tstr = String(imgURL);
+    console.log(tstr);
+    let newURI = tstr.replace("./", "")
+
     return (
     <Modal transparent={true} visible={visible} animationType='fade' onRequestClose={onClose}>
         <View style={styles.overlay}>
@@ -138,9 +162,7 @@ const Popup = ({visible, onClose, cowData, imgURL}) => {
                     {/* Information of the cow */}
                     <View style={isMobile ? styles.cowImgContainerMobile : styles.cowImgContainer}>
                         {/* Should be replaced with the actual cow image. */}
-                        <Image style={isMobile ? styles.cowImageMobile : styles.cowImage} source={{
-                            uri: "https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png", 
-                        }}
+                        <Image style={isMobile ? styles.cowImageMobile : styles.cowImage} source={{uri: getImageUri(cowData)}}
                         />
                     </View>
                     
@@ -150,9 +172,9 @@ const Popup = ({visible, onClose, cowData, imgURL}) => {
                         <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Work Number: {cowData.Tag}</Text>
                         {/* <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>ID Number: {cowData}</Text> */}
                         {/* <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Full Number: BE429940016 {console.log(cowData)}</Text> */}
-                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Country: {cowData.country}</Text>
-                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Age: {cowData.age}</Text>
-                        {/* <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Company: Kupersvee B.V</Text> */}
+                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Country: {cowData.Country}</Text>
+                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Age: {cowData.Birthdate}</Text>
+                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Company: {cowData.Company}</Text>
                         <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Color: {cowData.Color}</Text>
                     </View>
 

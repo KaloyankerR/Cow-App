@@ -23,7 +23,7 @@ export default function CowDetailCard({ cow, clicked}) {
     <TouchableOpacity  onPress={clicked}>
       <View style={[styles.card, { borderColor: cardBorderColor, borderWidth: 3 }]} >
         <Text style={styles.detail}>🏷️ Tag: {cow.Tag}</Text>
-        <Text style={styles.detail}>🌍 Country: {cow.country}</Text>
+        <Text style={styles.detail}>🌍 Country: {cow.Country}</Text>
         {/* <Text style={styles.detail}>🐄 Breed: {cow.breed}</Text> */}
       </View>
     </TouchableOpacity>

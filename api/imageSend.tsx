@@ -52,16 +52,16 @@ export const uploadImageString = async (
   value: string
 ): Promise<AxiosResponse> => {
   try {
-    console.log("Here");
-    console.log("Here2");
-    console.log(value);
+    // console.log("Here");
+    // console.log("Here2");
+    // console.log(value);
     const response = await axios.post(`${BASE_URL}/uploadString/`, {
       headers: { "Content-Type": "text/plain" },
       data: {
         value: value,
       },
     });
-    console.log("Here3");
+    // console.log("Here3");
     // Check if the expected data is present
     if (response.data) {
       return response;
@@ -77,11 +77,11 @@ export const uploadImageString = async (
 
 export const uploadImage2 = async (file: FormData): Promise<string> => {
   try {
-    console.log("Here");
+    // console.log("Here");
     const response = await axios.post(`${BASE_URL}/upload/`, file, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    console.log("Here2");
+    // console.log("Here2");
     // Check if the expected data is present
     if (response.data && response.data.message) {
       return response.data.message;

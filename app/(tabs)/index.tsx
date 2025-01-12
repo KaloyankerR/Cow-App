@@ -82,7 +82,6 @@ export default function HomeScreen() {
       setImage("data:image/jpeg;base64," + response.data.labeled_image);
       setCowDetails(response.data.cow_data)
       setText(response.data.message);
-      console.log(response.data)
     }
   };
 
@@ -98,7 +97,7 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
 
         {/* pop up! */}
-        <Popup visible={isPopUpVis} onClose={togglePopup} cowData={cowDataPU}/>
+        <Popup visible={isPopUpVis} onClose={togglePopup} cowData={cowDataPU} imgURL={cowDataPU.IMG_URL}/>
 
 
         {image && <Image source={{ uri: image }} style={styles.image} resizeMode="contain"/>}

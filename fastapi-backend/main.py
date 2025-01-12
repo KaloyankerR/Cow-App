@@ -1,6 +1,7 @@
 import base64
 from fastapi import FastAPI, File, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from roboflow import Roboflow
 from pydantic import BaseModel
 import cv2
@@ -15,7 +16,9 @@ import urllib
 from paddleocr import PaddleOCR
 from Levenshtein import distance as levenshtein_distance
 import re
+import datetime
 import json
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
@@ -26,6 +29,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+app.mount("/images", StaticFiles(directory="saved_images"), name="images")
+
 
 # Roboflow setup
 rf2 = Roboflow(api_key="IxBbH3p5wJVfT83GdUsz")
@@ -275,12 +282,11 @@ def process_image_with_cows_and_tags(image_name):
         if not os.path.exists(image_name):
             return "Error: Input image not found"
         # Detect objects (cows and tags)
-        all_cords = model.predict(image_name, confidence=50, overlap=30).json()
-        all_cor = model.predict(image_name, confidence=50, overlap=30)
-        output_file = "predictions.json"
-        with open(output_file, "w") as file:
-            json.dump(all_cords, file, indent=4)
-        model.predict(image_name, confidence=50, overlap=30).save(f"labeled_images/prediction.jpg")
+        prediction_result = model.predict(image_name, confidence=50, overlap=30)
+
+        all_cords = prediction_result.json()
+
+        prediction_result.save(f"labeled_images/prediction.jpg")
 
         # Read the input image
         image = cv2.imread(image_name)
@@ -446,13 +452,14 @@ def hair_detection(image_name, foundCow):
                         # print(f'Color detected: {label} - Confidence: {confidence}')
                         #log.append(f"Detected Hair Color: {label} with Confidence: {confidence:.2f}")         
                         
+
+                    label = label.capitalize()
                     foundCow["Color"] = label #
-                    #d_color[highest_confIndx]
                     foundCow["Color_Confidence"] =  confidence 
                     foundCow["IMG_URL"] = image_name
-                    print(verification_df)
                     print(foundCow)
-                    #max(d_confidence)
+                    getDataFromExcel(foundCow=foundCow)
+
                 else:
                     print("\n\n\nNo hair color detected")                                    
                     foundCow["Color"] = "N/A"
@@ -460,10 +467,89 @@ def hair_detection(image_name, foundCow):
                     foundCow["IMG_URL"] = ""
     	
             except Exception as e:
-                print(f'Error in hair detection: {str(e)}')
                 foundCow["Color"] = "N/A"
                 foundCow["Color_Confidence"] = 0
                 foundCow["IMG_URL"] = ""
+                foundCow["Country"] = "N/A"
+                foundCow["Company"] = "N/A"
+                foundCow["Birthdate"] = "N/A"
+                foundCow["Fulltag"] = "N/A"
+                print(f'Error in hair detection: {str(e)}')
+                
+
+
+def getDataFromExcel(foundCow):
+    # Reads and cleans excel (again)
+    # Then checks if there is a matching row. 
+    # Then returns this information to the front end!
+
+    excel_path="Data/CowInfo.xlsx"
+    excelData = pd.read_excel(excel_path)
+    
+    excelData = excelData.iloc[:, 8:]
+    columns_to_rename = {
+        "Unnamed: 8":"Number",
+        "Unnamed: 9":"Worknumber",
+        "Unnamed: 10":"Full number",
+        "Unnamed: 11":"Full code",
+        "Unnamed: 12":"ID",
+        "Unnamed: 13":"ID",
+        "Unnamed: 14":"Country",
+        "Unnamed: 15":"Date",
+        "Unnamed: 16":"Company",
+        "Unnamed: 17":"Unknown_0",
+        "Unnamed: 18":"Unknown_1",
+        "Unnamed: 19":"Color",
+        "Unnamed: 20":"Date_2",
+    }
+
+    excelData = excelData.rename(columns=columns_to_rename)
+    
+    columns_to_drop = ['Unnamed: 21', "Unnamed: 22", "Date_2", "Unknown_1", "Unknown_0"]
+    excelData = excelData.drop(columns=columns_to_drop)
+
+    excelData = excelData[excelData['Number'] != 'LopendTotaal_V']
+    
+    excelData = excelData.dropna()
+
+
+    excelData['Worknumber'] = pd.to_numeric(excelData['Worknumber'], errors='coerce')
+    excelData['Color'] = excelData['Color'].astype(str)
+    
+    cTag = foundCow.get('Tag')
+    cColor = foundCow.get('Color')
+    print(f'Tag we got: {cTag} and color {cColor}')
+
+
+    foundCowTagInExcel = excelData[excelData['Worknumber'] == int(cTag)]
+    foundCowTagInExcel = foundCowTagInExcel[foundCowTagInExcel['Color'] == cColor]
+    
+    if foundCowTagInExcel.empty == False:
+        print("\n\nDope, we found a row. Lets set the info now.")
+        print("\n\n")
+
+        row_dict = foundCowTagInExcel.iloc[0].to_dict()
+        datetime_obj = pd.to_datetime(row_dict.get('Date'))
+        
+        print(datetime_obj)
+        
+        
+        foundCow["Country"] = row_dict.get('Country')
+        foundCow["Company"] = row_dict.get('Company')
+        foundCow["Birthdate"] = datetime_obj
+        foundCow["Fulltag"] = row_dict.get('Full code')
+
+        print(foundCow)
+        print('\n\n\n')
+    else:
+        print("\n\nWe couldnt not find anything so far")
+        foundCow["Country"] = "N/A"
+        foundCow["Company"] = "N/A"
+        foundCow["Birthdate"] = "N/A"
+        foundCow["Fulltag"] = "N/A"
+        pass
+
+
 
 
 # FastAPI endpoints
@@ -527,8 +613,4 @@ async def upload_imageString(request: Request):
     with open("labeled_images/prediction.jpg", "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read())
 
-    # Cleanup
- 
-
     return {"cow_data": log, "labeled_image": encoded_string}
-
