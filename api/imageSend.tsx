@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from "axios";
+import ip_config from "../config";
 
-const BASE_URL = "http://192.168.2.17:8000";
+const BASE_URL = ip_config.API_BASE_URL;
 export const uploadVideoString = async (
   value: string
 ): Promise<AxiosResponse> => {

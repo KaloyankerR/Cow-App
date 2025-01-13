@@ -6,13 +6,12 @@
 import React, {useEffect, useState} from 'react';
 import {Modal, View, Text, StyleSheet, TouchableOpacity, Dimensions, Image} from 'react-native';
 import { Asset } from 'expo-asset';
+import ip_config from '@/config';
 
 const screenWidth = Dimensions.get('window').width;
 const isMobile = screenWidth < 768;
 
-const SERVER_URL = "http://192.168.2.17:8000";
-
-
+const SERVER_URL = ip_config.API_BASE_URL;
 
 //const [cowInfo, setCowInfo] = useState([]);
 
