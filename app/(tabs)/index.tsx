@@ -17,6 +17,8 @@ import { ScrollView } from "react-native-gesture-handler";
 import * as FileSystem from 'expo-file-system';
 import Popup from '@/components/Popup_CowInfo/CowPU';
 import CowDetailCardScan from "@/components/CowDetailCard_Scan";
+import ImageSlider from "@/components/ImageSliderComponent";
+
 
 export default function HomeScreen() {
 
@@ -29,9 +31,15 @@ export default function HomeScreen() {
   const [isPopUpVis, setPopUpVis] = useState(false);
   const [cowDataPU, setCowDataPU] = useState({})
 
+
+  // New stuff
+  const [getIsVid, setIsVid] = useState(false);
+  const [getVidFrames, setVidFrames] = useState([]);
+
+
   const togglePopup = () => {
     setPopUpVis(!isPopUpVis)
-    console.log(`Ok, pressed; state = ${isPopUpVis}`)
+    // console.log(`Ok, pressed; state = ${isPopUpVis}`)
   };
 
   const passInformationToPopUp = (cow: {}) => {
@@ -39,61 +47,33 @@ export default function HomeScreen() {
     togglePopup();
   }
 
-  // OLD 
-  
-  // const pickImage = async () => {
+  const checkCowInfo = (cow) => {
+    console.log("OK, cow info we are working with")
+    console.log(cow);
 
-  //   const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  //   let response;
-  
-  //   let result = await ImagePicker.launchImageLibraryAsync({
-  //     mediaTypes: ["images", "videos"],
-  //     base64: true,
-  //   });
-  
-  //   if (!result.canceled) {
-  //     setCowDetails([])
+    cow.forEach((item) => {
+      // First we check if this is a video response or a img response..
+      if(item.Tag == undefined)
+      {
+        // OK, so its a vid, now we're looping the info
+        console.log("Ok, so we determined it to be a vid. So for each item we get:")
+        console.log(item)
 
-  //     setText(
-  //       "🐮 Moo-tastic! Image Uploaded! Detecting breed and tag information..."
-  //     );
-  //     setImage("data:image/jpeg;base64," + result.assets[0].base64);
-  
-  //     if (result.assets[0].type === "image") {
-  //       response = await uploadImageString(
-  //         "data:image/jpeg;base64," + result.assets[0].base64
-  //       );
-  //     } else {
-  //       let base64;
+
+        setIsVid(true)
         
-  //       if (Platform.OS === 'web') {
-  //         // Web handling
-  //         const response = await fetch(result.assets[0].uri);
-  //         const blob = await response.blob();
-  //         base64 = await new Promise((resolve) => {
-  //           const reader = new FileReader();
-  //           reader.onloadend = () => resolve(reader.result.split(',')[1]);
-  //           reader.readAsDataURL(blob);
-  //         });
-  //       } else {
-  //         // Mobile handling
-  //         base64 = await FileSystem.readAsStringAsync(
-  //           result.assets[0].uri,
-  //           {
-  //             encoding: "base64",
-  //           }
-  //         );
-  //       }
-  
-  //       response = await uploadVideoString("data:video/mp4;base64," + base64);
-  //     }
-  
-  //     setImage("data:image/jpeg;base64," + response.data.labeled_image);
-  //     setCowDetails(response.data.cow_data)
-  //     setText(response.data.message);
-  //   }
-  // };
+        setVidFrames((prevItems) => [...prevItems, item]);
+      }
+      else
+      {
+        setIsVid(false)
+      }
+    })
 
+    
+  }
+
+  
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     let response;
@@ -106,7 +86,10 @@ export default function HomeScreen() {
     if (!result.canceled) {
       setText("🐮 Moo-tastic! Image Uploaded! Detecting breed and tag information...");
       setImage("data:image/jpeg;base64," + result.assets[0].base64);
-
+      setCowDetails([])
+      setVidFrames([])
+      setIsVid(false)
+      
       if (result.assets[0].type === "image") {
         response = await uploadImageString(
           "data:image/jpeg;base64," + result.assets[0].base64
@@ -139,9 +122,15 @@ export default function HomeScreen() {
       setImage("data:image/jpeg;base64," + response.data.labeled_image);
       setCowDetails(response.data.cow_data)
 
+
+      checkCowInfo(response.data.cow_data)
+      console.log(response.data)
+
       setText(response.data.message);
     }
   };
+
+  
 
 
   return (
@@ -157,28 +146,48 @@ export default function HomeScreen() {
 
         {/* pop up! */}
         <Popup visible={isPopUpVis} onClose={togglePopup} cowData={cowDataPU} imgURL={cowDataPU.IMG_URL}/>
+        
+        {getIsVid ? 
+        (
+          getVidFrames.length > 0 && <ImageSlider imgs={getVidFrames} passInformationToPopUp={passInformationToPopUp}/>
+        ) 
+        : 
+        (
+          image && <Image source={{ uri: image }} style={styles.image} resizeMode="contain"/>
+        )}
+        
 
 
-        {image && <Image source={{ uri: image }} style={styles.image} resizeMode="contain"/>}
-
-        {cowDetails.length > 0 && (
-          <View style={styles.detailsContainer}>
-            {/* <Text style={styles.detailsTitle}>Detected Cows:</Text> */}
-            <View style={styles.detectedCowsContainer}>
-              {cowDetails.map((cow, index) => (
-                <CowDetailCardScan key={index} cow={cow} clicked={() => passInformationToPopUp(cow)}/>
-              ))}
-            </View>
+        {getIsVid ? (
+          <View>
+            {console.log(cowDetails)}
             
           </View>
+        ) 
+        : 
+        (
+          <View>
+            {cowDetails.length > 0 && (
+              <View style={styles.detailsContainer}>
+                {/* <Text style={styles.detailsTitle}>Detected Cows:</Text> */}
+                <View style={styles.detectedCowsContainer}>
+                  {cowDetails.map((cow, index) => (
+                    <CowDetailCardScan key={index} cow={cow} clicked={() => passInformationToPopUp(cow)}/>
+                  ))}
+                </View>
+                
+              </View>
+            )}
+          </View>
         )}
+
 
 
 
         <View style={styles.buttonContainer}>
 
           <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-            <Text style={styles.buttonText}>📷 Upload Image</Text>
+            <Text style={styles.buttonText}>📷 Upload</Text>
           </TouchableOpacity>
         </View>
 

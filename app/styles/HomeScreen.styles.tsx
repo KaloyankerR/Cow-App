@@ -28,6 +28,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     alignItems: "center",
+    flex:1,
     //padding: 20,
     //paddingBottom: 50, // Add padding to avoid clipping at the bottom
   },
@@ -46,7 +47,6 @@ const styles = StyleSheet.create({
     borderColor: "#D2B48C",
     borderWidth: 2,
     elevation: 5, // Works for Android shadows
-    marginBottom: 20,
   },
   // 18/12/2024 - Added by me Shelson, just to center the button's
   buttonContainer: {
@@ -83,6 +83,12 @@ const styles = StyleSheet.create({
   },
   detailsTitle: {
     fontSize: 20
+  },
+
+
+
+  imageCont: {
+    marginTop: 40
   }
 });
 

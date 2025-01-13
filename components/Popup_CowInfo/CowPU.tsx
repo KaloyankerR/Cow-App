@@ -128,6 +128,8 @@ const styles = StyleSheet.create({
 
 
 const Popup = ({visible, onClose, cowData, imgURL}) => {
+    console.log("Pop Up data: ")
+    console.log(cowData) 
 
     const getImageUri = (cowData: object) => {
 
@@ -146,7 +148,7 @@ const Popup = ({visible, onClose, cowData, imgURL}) => {
 
 
     let tstr = String(imgURL);
-    console.log(tstr);
+    // console.log(tstr);
     let newURI = tstr.replace("./", "")
 
     return (

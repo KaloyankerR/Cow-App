@@ -31,6 +31,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.mount("/images", StaticFiles(directory="saved_images"), name="images")
+app.mount("/frames", StaticFiles(directory="saved_frames"), name="frames")
+
 # Roboflow setup
 rf2 = Roboflow(api_key="IxBbH3p5wJVfT83GdUsz")
 project2 = rf2.workspace().project("cow-hair-colors")
@@ -724,7 +726,7 @@ async def upload_video_string(request: Request):
 
         # Process each unique frame
         for frame_number, frame in unique_frames:
-            temp_frame_path = f'detected_frame_{frame_number}.jpg'
+            temp_frame_path = f'./saved_frames/detected_frame_{frame_number}.jpg'
             cv2.imwrite(temp_frame_path, frame)  # Save frame
             
             try:
@@ -746,7 +748,7 @@ async def upload_video_string(request: Request):
 
         # Return JSON response with detections and frame path
         
-        return {"framesWithDetections": all_detections}
+        return {"cow_data": all_detections}
     
     except Exception as e:
         
