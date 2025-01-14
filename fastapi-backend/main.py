@@ -35,7 +35,7 @@ app.mount("/frames", StaticFiles(directory="saved_frames"), name="frames")
 
 # Roboflow setup
 rf2 = Roboflow(api_key="IxBbH3p5wJVfT83GdUsz")
-project2 = rf2.workspace().project("cow-hair-colors")
+project2 = rf2.workspace().project("cow-breeds-ghi35")
 model_hair = project2.version(1).model
 
 #rf = Roboflow(api_key="qX0aQQBnqLywhVFmlU4C")
@@ -481,14 +481,15 @@ def scanImage(image_name):
                         
                     elif result['match_type'] == 'levenshtein':
                         matches_str = ', '.join(result['closest_matches'])
-                        foundCow["Tag"] = matches_str
+                        # foundCow["Tag"] = matches_str
                         log.append(f"Found similar matches for '{result['original_text']}': {matches_str} (distance: {result['distance']})")
 
                     tag = foundCow.get('Tag')
                     cowImg= f'./saved_images/{tag}.jpg' 
                     hair_detection(image_name=cowImg, foundCow=foundCow)
-                if tag != None:
-                    cowData.append(foundCow)
+                    #Try to be in loop
+                    if tag != None:
+                        cowData.append(foundCow)
 
             except Exception as e:
                 log.append(f"Error processing tag-cow pair {idx}: {str(e)}")
