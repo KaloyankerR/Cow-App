@@ -6,6 +6,28 @@ const styles = StyleSheet.create({
     backgroundColor: "#FAF3E3",
   },
   
+  // New styling 
+  failedContainer: {
+    width: "20vw",
+    height: "4vh",
+    justifyContent:"center",
+    backgroundColor: "#fff",
+    borderRadius: 5, 
+    alignItems: "center",
+
+    borderWidth: 1,
+    borderColor: "#cccccc",
+    elevation: 5, // Add shadow for Android,
+
+    marginTop: 20
+  },
+
+  failedText: {
+    fontSize: 18, 
+    fontWeight: 500,
+    color: "#ff4d4d"
+  },
+
   headerContainer: {
     padding: 20,
     backgroundColor: "#FAF3E3",

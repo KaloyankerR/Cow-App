@@ -39,7 +39,6 @@ export default function HomeScreen() {
 
   const togglePopup = () => {
     setPopUpVis(!isPopUpVis)
-    // console.log(`Ok, pressed; state = ${isPopUpVis}`)
   };
 
   const passInformationToPopUp = (cow: {}) => {
@@ -48,20 +47,13 @@ export default function HomeScreen() {
   }
 
   const checkCowInfo = (cow) => {
-    console.log("OK, cow info we are working with")
-    console.log(cow);
 
     cow.forEach((item) => {
       // First we check if this is a video response or a img response..
       if(item.Tag == undefined)
       {
         // OK, so its a vid, now we're looping the info
-        console.log("Ok, so we determined it to be a vid. So for each item we get:")
-        console.log(item)
-
-
         setIsVid(true)
-        
         setVidFrames((prevItems) => [...prevItems, item]);
       }
       else
@@ -121,11 +113,7 @@ export default function HomeScreen() {
 
       setImage("data:image/jpeg;base64," + response.data.labeled_image);
       setCowDetails(response.data.cow_data)
-
-
       checkCowInfo(response.data.cow_data)
-      console.log(response.data)
-
       setText(response.data.message);
     }
   };
@@ -160,14 +148,14 @@ export default function HomeScreen() {
 
         {getIsVid ? (
           <View>
-            {console.log(cowDetails)}
-            
+            {/* {console.log(cowDetails)} */}
+            {/* Going to keep this empty for now */}
           </View>
         ) 
         : 
         (
           <View>
-            {cowDetails.length > 0 && (
+            {cowDetails.length > 0 ? (
               <View style={styles.detailsContainer}>
                 {/* <Text style={styles.detailsTitle}>Detected Cows:</Text> */}
                 <View style={styles.detectedCowsContainer}>
@@ -177,7 +165,14 @@ export default function HomeScreen() {
                 </View>
                 
               </View>
-            )}
+            )
+            :(
+              // <View style={styles.failedContainer}>
+              //   <Text style={styles.failedText}>Failed to detect cow(s)</Text>
+              // </View>
+              <View></View>
+            )
+          }
           </View>
         )}
 

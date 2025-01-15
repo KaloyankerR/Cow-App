@@ -542,7 +542,9 @@ def hair_detection(image_name, foundCow):
                     print("\n\n\nNo hair color detected")                                    
                     foundCow["Color"] = "N/A"
                     foundCow["Color_Confidence"] = 0
-                    foundCow["IMG_URL"] = ""
+                    foundCow["IMG_URL"] = image_name
+                    getDataFromExcel(foundCow=foundCow)
+
     	
             except Exception as e:
                 foundCow["Color"] = "N/A"
@@ -584,10 +586,19 @@ def getDataFromExcel(foundCow):
     excelData = excelData.rename(columns=columns_to_rename)
     
     columns_to_drop = ['Unnamed: 21', "Unnamed: 22", "Date_2", "Unknown_1", "Unknown_0"]
+
     excelData = excelData.drop(columns=columns_to_drop)
+
+
+    
 
     excelData = excelData[excelData['Number'] != 'LopendTotaal_V']
     
+
+    # excelData = excelData.replace({
+    #     "":""
+    # })
+
     excelData = excelData.dropna()
 
 
@@ -600,7 +611,7 @@ def getDataFromExcel(foundCow):
 
 
     foundCowTagInExcel = excelData[excelData['Worknumber'] == int(cTag)]
-    foundCowTagInExcel = foundCowTagInExcel[foundCowTagInExcel['Color'] == cColor]
+    # foundCowTagInExcel = foundCowTagInExcel[foundCowTagInExcel['Color'] == cColor]
     
     if foundCowTagInExcel.empty == False:
         print("\n\nDope, we found a row. Lets set the info now.")
@@ -608,9 +619,6 @@ def getDataFromExcel(foundCow):
 
         row_dict = foundCowTagInExcel.iloc[0].to_dict()
         datetime_obj = pd.to_datetime(row_dict.get('Date'))
-        
-        print(datetime_obj)
-        
         
         foundCow["Country"] = row_dict.get('Country')
         foundCow["Company"] = row_dict.get('Company')

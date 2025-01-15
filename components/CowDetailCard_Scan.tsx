@@ -9,14 +9,14 @@ export default function CowDetailCardScan({ cow, clicked}) {
     // console.log(cow)
     if(cow.Tag == undefined)
       {
-        console.log("OI, its undefined which means this information is from a video")
+        // console.log("OI, its undefined which means this information is from a video")
         let tag = cow.Detections[0].Tag
-        console.log(`OK, tag is: ${tag}`)
+        // console.log(`OK, tag is: ${tag}`)
         isVid = true;
       }
       else {
-        console.log("OK, this is the normal format (for images)")
-        console.log(`info ${cow.Tag}`)
+        // console.log("OK, this is the normal format (for images)")
+        // console.log(`info ${cow.Tag}`)
       }
   }
 

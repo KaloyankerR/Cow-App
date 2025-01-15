@@ -65,7 +65,6 @@ const styles = StyleSheet.create({
     },
     cowDataContainer: {
         marginLeft:40,
-        marginTop:60
     },
 
     cowDataContainerMobile: {
@@ -122,14 +121,33 @@ const styles = StyleSheet.create({
     cowDataTextMobile: {
         fontSize: 19,
         height: 30,
+    },
+    cowDataWorkNumber: {
+        flexDirection: "row",
+        height: "10%", 
+        gap: 10,
+        borderBottomColor: "grey",
+        borderBottomWidth: 1,
+    },
+    cowDataWorkTxt: {
+        fontSize:17,
+        paddingLeft: 10,
+    },
+    boldText: {
+        fontWeight: 500
     }
   });
 
 
 
 const Popup = ({visible, onClose, cowData, imgURL}) => {
-    console.log("Pop Up data: ")
-    console.log(cowData) 
+    // console.log("Pop Up data: ")
+    // console.log(cowData) 
+    let cowsAge = {
+        "age":0,
+        "format":""
+    };
+
 
     const getImageUri = (cowData: object) => {
 
@@ -144,7 +162,53 @@ const Popup = ({visible, onClose, cowData, imgURL}) => {
         }
     }
 
+    const convertDateToAge = (date="") => {
+        // DOB = Date of Birth
+        const cowDOB = new Date(date);
+        const currDate = new Date();
 
+        console.log(date)
+
+        let age = currDate.getFullYear() - cowDOB.getFullYear();
+        
+        const isBeforeBOD = currDate.getMonth() < cowDOB.getMonth() ||
+        (currDate.getMonth() === cowDOB.getMonth() 
+        && currDate.getDate() < cowDOB.getDate())
+        
+        if (isBeforeBOD) {
+            age--;
+        }
+
+        // Calculate months difference
+        let months = currDate.getMonth() - cowDOB.getMonth();
+
+        if (months < 0) {
+            age--;
+            months += 12; // Adjust for negative months
+        }
+
+        // Adjust days to refine the month difference
+        if (currDate.getDate() < cowDOB.getDate() && months >= 0) {
+            months--;
+            
+        }
+        
+        if(age <= 0)
+        {
+            cowsAge.age = months;
+            console.log(months)
+            cowsAge.format = "m";
+        }
+        else{
+            cowsAge.age = age;
+            console.log(age)
+            cowsAge.format = "y";
+        }
+    }
+    
+    //convertDateToAge("2024-06-15T00:00:00")
+
+    convertDateToAge(cowData.Birthdate)
 
 
     let tstr = String(imgURL);
@@ -169,14 +233,35 @@ const Popup = ({visible, onClose, cowData, imgURL}) => {
                     
 
                     <View style={isMobile ? styles.cowDataContainerMobile : styles.cowDataContainer}>
+                        <View style={styles.cowDataWorkNumber}>
+                            <Text style={styles.cowDataWorkTxt}><Text style={styles.boldText}>Full number:</Text> {cowData.Fulltag}</Text>
+                            <Text style={styles.cowDataWorkTxt}>|</Text>
+                            <Text style={styles.cowDataWorkTxt}><Text style={styles.boldText}>Work number:</Text> {cowData.Tag}</Text>
+                        </View>
                         
-                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Work Number: {cowData.Tag}</Text>
-                        {/* <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>ID Number: {cowData}</Text> */}
-                        {/* <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Full Number: BE429940016 {console.log(cowData)}</Text> */}
-                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Country: {cowData.Country}</Text>
-                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Age: {cowData.Birthdate}</Text>
-                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Company: {cowData.Company}</Text>
-                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>Color: {cowData.Color}</Text>
+                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>
+                            <Text style={styles.boldText}>Country: </Text>
+                            {cowData.Country}
+                        </Text>
+                        
+                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>
+                            <Text style={styles.boldText}>Age: </Text>
+                            <Text>{cowsAge.age} - </Text>
+                            <Text>
+                                {cowsAge.format == "m" ? "Months": "Years"} old
+                            </Text>
+                        </Text>
+                        
+                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>
+                            <Text style={styles.boldText}>Company: </Text>
+                            {cowData.Company}
+                        </Text>
+                        
+                        <Text style={isMobile ? styles.cowDataTextMobile : styles.cowDataText}>
+                            <Text style={styles.boldText}>Color: </Text>
+                            {cowData.Color}
+                        </Text>
+
                     </View>
 
                     
