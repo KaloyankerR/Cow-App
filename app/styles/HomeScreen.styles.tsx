@@ -78,6 +78,12 @@ const styles = StyleSheet.create({
     marginTop:"1%"
   },
   
+  buttonContainerPH: {
+    flex:1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
   buttonText: {
     fontSize: 18,
     color: "#FFF7E4",
@@ -95,6 +101,19 @@ const styles = StyleSheet.create({
     backgroundColor: "#FAEBD7",
     elevation: 5, // Add shadow for Android
   },
+
+  // Phone styling
+  imagePH: {
+    width: 300,
+    height: 400,
+    borderRadius: 20,
+    marginTop: 20,
+    borderWidth: 3,
+    borderColor: "#8B4513",
+    backgroundColor: "#FAEBD7",
+    elevation: 5, // Add shadow for Android
+  },
+
   imageText: {
     marginTop: 15,
     fontSize: 18,

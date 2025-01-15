@@ -4,7 +4,8 @@ import {
   Text,
   TouchableOpacity,
   ActivityIndicator,
-  Platform
+  Platform,
+  Dimensions
 } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import * as ImagePicker from "expo-image-picker";
@@ -35,6 +36,10 @@ export default function HomeScreen() {
   // New stuff
   const [getIsVid, setIsVid] = useState(false);
   const [getVidFrames, setVidFrames] = useState([]);
+
+  const screenWidth = Dimensions.get('window').width;
+  const isMobile = screenWidth < 768;
+
 
 
   const togglePopup = () => {
@@ -118,9 +123,6 @@ export default function HomeScreen() {
     }
   };
 
-  
-
-
   return (
     <View style={styles.container}>
 
@@ -141,7 +143,7 @@ export default function HomeScreen() {
         ) 
         : 
         (
-          image && <Image source={{ uri: image }} style={styles.image} resizeMode="contain"/>
+          image && <Image source={{ uri: image }} style={isMobile ? styles.imagePH : styles.image} resizeMode="contain"/>
         )}
         
 
@@ -179,12 +181,11 @@ export default function HomeScreen() {
 
 
 
-        <View style={styles.buttonContainer}>
-
+        <View style={isMobile ? styles.buttonContainerPH : styles.buttonContainer}>
           <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
             <Text style={styles.buttonText}>📷 Upload</Text>
           </TouchableOpacity>
-        </View>
+        </View>                                                                                   
 
         {/* {image && <Text style={styles.imageText}>{text}</Text>} */}
 
