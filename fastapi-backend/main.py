@@ -34,9 +34,9 @@ app.mount("/images", StaticFiles(directory="saved_images"), name="images")
 app.mount("/frames", StaticFiles(directory="saved_frames"), name="frames")
 
 # Roboflow setup
-rf2 = Roboflow(api_key="IxBbH3p5wJVfT83GdUsz")
-project2 = rf2.workspace().project("cow-breeds-ghi35")
-model_hair = project2.version(1).model
+rf2 = Roboflow(api_key="s4CoCObGq01fLML1N0Ej")
+project2 = rf2.workspace().project("cow-breeds-ghi35-yioxt")
+model_hair = project2.version(2).model
 
 #rf = Roboflow(api_key="qX0aQQBnqLywhVFmlU4C")
 rf = Roboflow(api_key="s4CoCObGq01fLML1N0Ej")
@@ -599,7 +599,7 @@ def getDataFromExcel(foundCow):
     #     "":""
     # })
 
-    excelData = excelData.dropna()
+    excelData = excelData.dropna(how='all')
 
 
     excelData['Worknumber'] = pd.to_numeric(excelData['Worknumber'], errors='coerce')
@@ -617,14 +617,13 @@ def getDataFromExcel(foundCow):
         print("\n\nDope, we found a row. Lets set the info now.")
         print("\n\n")
 
-        row_dict = foundCowTagInExcel.iloc[0].to_dict()
-        datetime_obj = pd.to_datetime(row_dict.get('Date'))
+        row_dict = foundCowTagInExcel.iloc[0].fillna("N/A").to_dict()
+        datetime_obj = pd.to_datetime(row_dict.get('Date', 'N/A')) if row_dict.get('Date') != "N/A" else "N/A"
         
-        foundCow["Country"] = row_dict.get('Country')
-        foundCow["Company"] = row_dict.get('Company')
+        foundCow["Country"] = row_dict.get('Country', "N/A")
+        foundCow["Company"] = row_dict.get('Company', "N/A")
         foundCow["Birthdate"] = datetime_obj
-        foundCow["Fulltag"] = row_dict.get('Full code')
-
+        foundCow["Fulltag"] = row_dict.get('Full code', "N/A")
         print(foundCow)
         print('\n\n\n')
     else:
