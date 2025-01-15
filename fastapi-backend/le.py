@@ -31,12 +31,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.mount("/images", StaticFiles(directory="saved_images"), name="images")
-app.mount("/frames", StaticFiles(directory="saved_frames"), name="frames")
-
 # Roboflow setup
-rf2 = Roboflow(api_key="s4CoCObGq01fLML1N0Ej")
-project2 = rf2.workspace().project("cow-breeds-ghi35-yioxt")
-model_hair = project2.version(2).model
+rf2 = Roboflow(api_key="IxBbH3p5wJVfT83GdUsz")
+project2 = rf2.workspace().project("cow-hair-colors")
+model_hair = project2.version(1).model
 
 #rf = Roboflow(api_key="qX0aQQBnqLywhVFmlU4C")
 rf = Roboflow(api_key="s4CoCObGq01fLML1N0Ej")
@@ -465,7 +463,13 @@ def scanImage(image_name):
                 # Pass both tag and cow image data to processing function
                 detected_texts, results = find_closest_matches(tag_image_bytes, cow_image_bytes)
                 for result in results:
-                    foundCow = {}
+                    fCow = {}
+                    foundCow = {
+                        "detectedFrame":"N/A",
+                        "Detections": [fCow]
+                    }
+
+                    
                     
 
                     if result['match_type'] == 'error':
@@ -473,23 +477,22 @@ def scanImage(image_name):
                     elif result['match_type'] == 'warning':
                         log.append(f"Warning for tag-cow pair {idx}: {result['message']}")
                     elif result['match_type'] == 'full_tag':
-                        foundCow["Tag"] = result['matched_value']
+                        fCow["Tag"] = result['matched_value']
                         log.append(f"Found full tag match: {result['matched_value']}")
                     elif result['match_type'] == 'work_number':
-                        foundCow["Tag"] = result['matched_value']
+                        fCow["Tag"] = result['matched_value']
                         log.append(f"Found work number match: {result['matched_value']}")
                         
                     elif result['match_type'] == 'levenshtein':
                         matches_str = ', '.join(result['closest_matches'])
-                        # foundCow["Tag"] = matches_str
+                        fCow["Tag"] = matches_str
                         log.append(f"Found similar matches for '{result['original_text']}': {matches_str} (distance: {result['distance']})")
 
-                    tag = foundCow.get('Tag')
+                    tag = fCow.get('Tag')
                     cowImg= f'./saved_images/{tag}.jpg' 
-                    hair_detection(image_name=cowImg, foundCow=foundCow)
-                    #Try to be in loop
-                    if tag != None:
-                        cowData.append(foundCow)
+                    hair_detection(image_name=cowImg, foundCow=fCow)
+                if tag != None:
+                    cowData.append(foundCow)
 
             except Exception as e:
                 log.append(f"Error processing tag-cow pair {idx}: {str(e)}")
@@ -501,6 +504,10 @@ def scanImage(image_name):
     except Exception as e:
         log.append(f"Critical error in image processing: {str(e)}")
 
+
+    print(cowData)
+
+    cowData.append(foundCow)
     print("\n".join(log))
     print(cowData)
 
@@ -542,9 +549,7 @@ def hair_detection(image_name, foundCow):
                     print("\n\n\nNo hair color detected")                                    
                     foundCow["Color"] = "N/A"
                     foundCow["Color_Confidence"] = 0
-                    foundCow["IMG_URL"] = image_name
-                    getDataFromExcel(foundCow=foundCow)
-
+                    foundCow["IMG_URL"] = ""
     	
             except Exception as e:
                 foundCow["Color"] = "N/A"
@@ -586,20 +591,11 @@ def getDataFromExcel(foundCow):
     excelData = excelData.rename(columns=columns_to_rename)
     
     columns_to_drop = ['Unnamed: 21', "Unnamed: 22", "Date_2", "Unknown_1", "Unknown_0"]
-
     excelData = excelData.drop(columns=columns_to_drop)
-
-
-    
 
     excelData = excelData[excelData['Number'] != 'LopendTotaal_V']
     
-
-    # excelData = excelData.replace({
-    #     "":""
-    # })
-
-    excelData = excelData.dropna(how='all')
+    excelData = excelData.dropna()
 
 
     excelData['Worknumber'] = pd.to_numeric(excelData['Worknumber'], errors='coerce')
@@ -611,19 +607,23 @@ def getDataFromExcel(foundCow):
 
 
     foundCowTagInExcel = excelData[excelData['Worknumber'] == int(cTag)]
-    # foundCowTagInExcel = foundCowTagInExcel[foundCowTagInExcel['Color'] == cColor]
+    foundCowTagInExcel = foundCowTagInExcel[foundCowTagInExcel['Color'] == cColor]
     
     if foundCowTagInExcel.empty == False:
         print("\n\nDope, we found a row. Lets set the info now.")
         print("\n\n")
 
-        row_dict = foundCowTagInExcel.iloc[0].fillna("N/A").to_dict()
-        datetime_obj = pd.to_datetime(row_dict.get('Date', 'N/A')) if row_dict.get('Date') != "N/A" else "N/A"
+        row_dict = foundCowTagInExcel.iloc[0].to_dict()
+        datetime_obj = pd.to_datetime(row_dict.get('Date'))
         
-        foundCow["Country"] = row_dict.get('Country', "N/A")
-        foundCow["Company"] = row_dict.get('Company', "N/A")
+        print(datetime_obj)
+        
+        
+        foundCow["Country"] = row_dict.get('Country')
+        foundCow["Company"] = row_dict.get('Company')
         foundCow["Birthdate"] = datetime_obj
-        foundCow["Fulltag"] = row_dict.get('Full code', "N/A")
+        foundCow["Fulltag"] = row_dict.get('Full code')
+
         print(foundCow)
         print('\n\n\n')
     else:
@@ -674,9 +674,11 @@ async def upload_imageString(request: Request):
         encoded_string = base64.b64encode(image_file.read())
 
     # Cleanup
- 
+    cowInfo = [
+        log, encoded_string
+    ]
 
-    return {"cow_data": log, "labeled_image": encoded_string}
+    return {"cow_data": log}
 
 def get_unique_frames(video_path: str, threshold=45):
     cap = cv2.VideoCapture(video_path)
@@ -734,7 +736,7 @@ async def upload_video_string(request: Request):
 
         # Process each unique frame
         for frame_number, frame in unique_frames:
-            temp_frame_path = f'./saved_frames/detected_frame_{frame_number}.jpg'
+            temp_frame_path = f'detected_frame_{frame_number}.jpg'
             cv2.imwrite(temp_frame_path, frame)  # Save frame
             
             try:
